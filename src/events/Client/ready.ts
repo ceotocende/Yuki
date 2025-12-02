@@ -8,10 +8,12 @@ Client.once('ready', async (client) => {
 
     const checkChannel = client.guilds.cache.get('1397730981871620298');
     if (!checkChannel) {
-        return
+        console.log('Не получилось')
+        return;
     } else {
         const channelSendStart = await checkChannel.channels.cache.get(checkChannel.id) as TextChannel;
 
-        channelSendStart.send('Хозяин, я проснулась!')
+        channelSendStart.send('Хозяин, я проснулась!');
+        console.log('получилось')
     }
 });
