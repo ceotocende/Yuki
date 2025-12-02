@@ -22,7 +22,7 @@ export default new client.command({
         }
         const gif = drink[Math.floor(Math.random() * drink.length)];
         const user = interaction.user;
-
+        console.log(gif)
         if (!target) {
             return interaction.reply({
                 embeds: [
