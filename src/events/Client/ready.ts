@@ -6,9 +6,9 @@ Client.once('ready', async (client) => {
     Client.user?.setActivity('голоса',{ type: ActivityType.Listening });
     Client.user?.setStatus("idle")
 
-    const checkChannel = client.guilds.cache.get('1397730981871620298');
+    const guild = client.guilds.cache.get('1397730981124767878');
    
-        const channelSendStart = await checkChannel!.channels.cache.get(checkChannel!.id) as TextChannel;
+        const channelSendStart = await guild!.channels.cache.get('1397730981871620298') as TextChannel;
 
         channelSendStart.send('Хозяин, я проснулась!');
    
