@@ -8,7 +8,7 @@ Client.once('ready', async (client) => {
 
     const guild = client.guilds.cache.get('1397730981124767878');
    
-        const channelSendStart = await guild!.channels.cache.get('1397730981871620298') as TextChannel;
+        const channelSendStart = await guild!.channels.cache.get('1447690029362188560') as TextChannel;
 
         channelSendStart.send('Хозяин, я проснулась!');
    
