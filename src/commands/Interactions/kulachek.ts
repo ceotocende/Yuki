@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, EmbedBuilder } from "discord.js";
+import { SlashCommandBuilder, EmbedBuilder, Embed } from "discord.js";
 import { client } from "../..";
 import { colors, embedErrFromInteractions } from '../../utils/config';
 import { kulachek } from '../../utils/gif.json'
