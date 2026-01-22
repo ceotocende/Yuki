@@ -58,7 +58,7 @@ export default new client.command({
                                 value: `\`${userRecordDb.count_symbol}\``
                             },
                             {
-                                name: `Использованний команд`,
+                                name: `Использованых команд`,
                                 value: `\`${userRecordDb.commands_count}\``
                             },
                             {
