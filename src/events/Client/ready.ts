@@ -1,15 +1,16 @@
 import { client as Client } from "../..";
 import { ActivityType, TextChannel } from "discord.js";
+import { TableSync } from "../../database/dbsync";
 
 Client.once('ready', async (client) => {
     console.log('Logged in as: ' + Client.user?.tag);
-    Client.user?.setActivity('голоса',{ type: ActivityType.Listening });
+    Client.user?.setActivity('голоса', { type: ActivityType.Listening });
     Client.user?.setStatus("idle")
 
     const guild = client.guilds.cache.get('1397730981124767878');
-   
-        const channelSendStart = await guild!.channels.cache.get('1447690029362188560') as TextChannel;
 
-        channelSendStart.send('Хозяин, я проснулась!');
-   
+    const channelSendStart = await guild!.channels.cache.get('1447690029362188560') as TextChannel;
+
+    channelSendStart.send('Хозяин, я проснулась!');
+    await TableSync();
 });

@@ -15,3 +15,8 @@ export const embedErrFromUserDb = new EmbedBuilder()
     .setDescription('К сожалению вас или участника нет в базе данных.\nНапишите что нибудь в любой чат и я вас обязательно добавлю!')
     .setColor('Red')
     .setTimestamp()
+
+export const channelsId = {
+    guildId: "1397730981124767878",
+    voiceLog: "1447690029362188560",
+}

@@ -8,10 +8,15 @@
     "build_2": "tsc"
   },
   "dependencies": {
+    "@types/node": "^25.0.8",
+    "canvas": "^3.2.1",
     "discord-builder": "^1.1.5",
     "discord.js": "^14.14.1",
     "dotenv": "^16.3.1",
     "ms-typescript": "^2.0.0",
+    "sequelize": "^6.37.7",
+    "sqlite": "^5.1.1",
+    "sqlite3": "^5.1.7",
     "ts-node": "^10.9.1",
     "typescript": "^5.2.2"
   },
