@@ -8,9 +8,13 @@ export default async function AddExpToDatabase(user: User, exp: number) {
     if (!userDb) return;
     else {
         if (userDb.user_id === user.id) {
-            userDb.exp = Number(userDb.exp) + exp;
-            userDb.save();
-            await CheckLvl(user);
+            try {
+                userDb.exp = Number(userDb.exp) + exp;
+                userDb.save();
+                await CheckLvl(user);
+            } catch (err) {
+                console.error('ошибка в добавление опыта: ' + err);
+            }
         }
     }
 }

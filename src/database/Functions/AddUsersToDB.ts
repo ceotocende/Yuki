@@ -14,7 +14,7 @@ export default async function AddUserToDB(user: User) {
             const newUser = await Users.create({  
                 user_id: user.id,
                 balance: 0,
-                exp: 0,
+                exp: 1,
                 need_exp: 100,
                 lvl: 0
             })

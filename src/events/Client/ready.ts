@@ -2,7 +2,7 @@ import { client as Client } from "../..";
 import { ActivityType, TextChannel } from "discord.js";
 import { TableSync } from "../../database/dbsync";
 
-Client.once('ready', async (client) => {
+Client.once('clientReady', async (client) => {
     console.log('Logged in as: ' + Client.user?.tag);
     Client.user?.setActivity('голоса', { type: ActivityType.Listening });
     Client.user?.setStatus("idle")
