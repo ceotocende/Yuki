@@ -16,6 +16,7 @@ client.on('interactionCreate', async (interaction) => {
             command?.run(client, interaction);
             if (!userRecordsDb) return;
             userRecordsDb.commands_count = Number(userRecordsDb.commands_count) + 1;
+            userRecordsDb.save();
         } catch (err) {
             console.error(err);
             interaction.reply({ ephemeral: true, content: "Произошла ошибка при выполнение команды" })
