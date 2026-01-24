@@ -114,7 +114,7 @@ export default new client.command({
                         else if (userBal.balance < 1) {
                             const embed = new EmbedBuilder()
                                 .setTitle('Ошибка')
-                                .setDescription(`У вас слишком мало средств \n Узнать свой баланс можно командой \`/баланс\``)
+                                .setDescription(`У вас слишком мало средств \n Узнать свой баланс можно командой \`/профиль\` или \`/ранг\``)
                                 .setColor(`#${colors.stable}`)
                                 .setTimestamp();
                             
@@ -125,7 +125,7 @@ export default new client.command({
                         } else if (userBal.balance < roleBye) {
                             const embed = new EmbedBuilder()
                                 .setTitle('Ошибка')
-                                .setDescription('У вас недостаточно средств \n Узнать свой баланс можно командой \`/баланс\`')
+                                .setDescription('У вас недостаточно средств \n Узнать свой баланс можно командой \`/профиль\` или \`/ранг\`')
                                 .setColor(`#${colors.stable}`)
                                 .setTimestamp();
                             
