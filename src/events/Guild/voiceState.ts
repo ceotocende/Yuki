@@ -53,7 +53,7 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
     if (oldChannel !== null && newChannel === null) {
         await AddVoiceToDB(oldState.member!.user, currentTime - map.get(newState.member!.id));
         await AddExpToDatabase(oldState.member!.user, Math.floor((currentTime - map.get(newState.member!.id)) / 10000));
-        await AddBalanceToDB(newState.member!.user, Math.floor((currentTime - map.get(newState.member!.id)) / 1000));
+        await AddBalanceToDB(newState.member!.user, Math.floor((currentTime - map.get(newState.member!.id)) / 10000));
 
         map.delete(newState.member!.id);
         channelLog.send({
