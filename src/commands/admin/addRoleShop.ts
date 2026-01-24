@@ -16,31 +16,44 @@ export default new client.command({
             .setDescription('Введите цену')
             .setRequired(true)
         )
+        .addBooleanOption(op => op
+            .setName('bool')
+            .setDescription('Лучше не трогать если не знаешь как работать с ней')
+            .setRequired(true)
+        )
         .setDefaultMemberPermissions(8),
     run: async (client, interaction) => {
         const role = interaction.options.getRole('роль');
         const cost = interaction.options.getNumber('цена');
+        const bool = interaction.options.getBoolean('bool');
 
         if (!role || !cost) return interaction.reply({ content: 'произошла ошибка', ephemeral: true });
 
         const itemsShop = await ShopDB.findOne({ where: { item_id: role.id } });
-
-        if (!itemsShop) {
-            const newItem = await ShopDB.create({ item_id: role.id, cost: cost, time: '0', timely: false });
-
-            newItem.save();
-
-            interaction.reply({
-                content: `Роль ${role}, добавленна стоимостью **${cost}**`,
-                ephemeral: true
-            })
+        if (bool === true) {
+            if (!itemsShop) {
+                const newItem = await ShopDB.create({ item_id: role.id, cost: cost, time: '0', timely: false });
+    
+                newItem.save();
+    
+                interaction.reply({
+                    content: `Роль ${role}, добавленна стоимостью **${cost}**`,
+                    ephemeral: true
+                })
+            } else {
+                itemsShop.cost = cost;
+    
+                interaction.reply({
+                    content: `Цена роли ${role}, изменна на **${cost}**`,
+                    ephemeral: true
+                })
+            }
         } else {
-            itemsShop.cost = cost;
-
+            const destroyItem = await ShopDB.destroy({ where: { item_id: role.id } });
             interaction.reply({
-                content: `Цена роли ${role}, изменна на **${cost}**`,
-                ephemeral: true
-            })
+                    content: `Удалена роль ${role}`,
+                    ephemeral: true
+                })
         }
     }
 });
