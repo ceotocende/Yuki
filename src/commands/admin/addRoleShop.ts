@@ -18,7 +18,7 @@ export default new client.command({
         )
         .addBooleanOption(op => op
             .setName('bool')
-            .setDescription('Лучше не трогать если не знаешь как работать с ней')
+            .setDescription('Лучше не трогать если не знаешь как работать с ней, true добавить')
             .setRequired(true)
         )
         .setDefaultMemberPermissions(8),
@@ -37,22 +37,19 @@ export default new client.command({
                 newItem.save();
     
                 interaction.reply({
-                    content: `Роль ${role}, добавленна стоимостью **${cost}**`,
-                    ephemeral: true
+                    content: `Роль ${role}, добавленна стоимостью **${cost}**`
                 })
             } else {
                 itemsShop.cost = cost;
     
                 interaction.reply({
-                    content: `Цена роли ${role}, изменна на **${cost}**`,
-                    ephemeral: true
+                    content: `Цена роли ${role}, изменна на **${cost}**`
                 })
             }
         } else {
             const destroyItem = await ShopDB.destroy({ where: { item_id: role.id } });
             interaction.reply({
-                    content: `Удалена роль ${role}`,
-                    ephemeral: true
+                    content: `Удалена роль ${role}`
                 })
         }
     }

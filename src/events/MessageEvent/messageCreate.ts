@@ -1,8 +1,11 @@
+import { TextChannel } from "discord.js";
 import { client } from "../..";
 import AddBalanceToDB from "../../database/Functions/AddBalanceToDB";
 import AddExpToDatabase from "../../database/Functions/AddExpToDatabase";
 import AddMessageToDB from "../../database/Functions/AddMessageToDB";
 import AddUserToDB from "../../database/Functions/AddUsersToDB";
+import getBoxGiftTimely from "../../utils/getBoxGiftTimely";
+let messageCoutToGift = 0;
 
 client.on('messageCreate', async message => {
     if (message.author.bot) return;
@@ -11,4 +14,14 @@ client.on('messageCreate', async message => {
     await AddExpToDatabase(message.author, 1);
     await AddMessageToDB(message.author, message.content);
     await AddBalanceToDB(message.author, 1)
+
+    const channel = message.channel as TextChannel;
+
+    if (messageCoutToGift >= 100) {
+            messageCoutToGift = 0;
+            await getBoxGiftTimely(channel);
+        } else if (message.channel.id === '1397730981871620298') {
+            messageCoutToGift += 1;
+            console.log(true)
+        }
 })

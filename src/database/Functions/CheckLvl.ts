@@ -49,7 +49,7 @@ export default async function CheckLvl(user: User, guild: Guild) {
                         embeds: [
                             new EmbedBuilder()
                                 .setTitle('Поздравляем!')
-                                .setDescription(`${user} повысил свой уровень до ${userDb.lvl}\nНаграда за повышение уровня \`${oldExp}\` монеток`)
+                                .setDescription(`${user} повысил свой уровень до \`${userDb.lvl}\`\nНаграда за повышение уровня \`${oldExp}\` монеток.\nДо следующего уровня \`${userDb.need_exp}\``)
                                 .setThumbnail(`${user.avatarURL() || guild.iconURL()}`)
                                 .setTimestamp()
                                 .setColor('Purple')
