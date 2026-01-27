@@ -14,17 +14,10 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
 
     const oldChannel = oldState.channel;
     const newChannel = newState.channel;
-
+ 
     const currentTime = Date.now();
-channelLog.send({
-                embeds: [
-                    new EmbedBuilder()
-                        .setTitle('Произошла ошибка войса')
-                        .setDescription(`Присоединение ` + err)
-                        .setColor(Colors.Red)
-                        .setTimestamp()
-                ]
-            });
+    const channelLog = newState.guild.channels.cache.get(channelsId.voiceLog) as TextChannel;
+
     if (newState.channel !== null && oldChannel === null) {
         try {
             map.set(newState.member!.id, currentTime);
