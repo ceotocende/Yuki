@@ -16,54 +16,100 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
     const newChannel = newState.channel;
 
     const currentTime = Date.now();
-    const channelLog = newState.guild.channels.cache.get(channelsId.voiceLog) as TextChannel;
-
+channelLog.send({
+                embeds: [
+                    new EmbedBuilder()
+                        .setTitle('Произошла ошибка войса')
+                        .setDescription(`Присоединение ` + err)
+                        .setColor(Colors.Red)
+                        .setTimestamp()
+                ]
+            });
     if (newState.channel !== null && oldChannel === null) {
-        map.set(newState.member!.id, currentTime);
-        await AddUserToDB(newState.member!.user);
-        channelLog.send({
-            embeds: [
-                new EmbedBuilder()
-                    .setAuthor({ name: `Участник присоединился к голосовому каналу`, iconURL: `${newState.member?.user.displayAvatarURL()}` })
-                    .setDescription(`Участник ${newState.member}, присоединился к каналу ${newState.channel}`)
-                    .setColor(Colors.Green)
-                    .setTimestamp()
-            ]
-        })
+        try {
+            map.set(newState.member!.id, currentTime);
+            await AddUserToDB(newState.member!.user);
+            channelLog.send({
+                embeds: [
+                    new EmbedBuilder()
+                        .setAuthor({ name: `Участник присоединился к голосовому каналу`, iconURL: `${newState.member?.user.displayAvatarURL()}` })
+                        .setDescription(`Участник ${newState.member}, присоединился к каналу ${newState.channel}`)
+                        .setColor(Colors.Green)
+                        .setTimestamp()
+                ]
+            });
+        } catch (err) {
+            console.error(err);
+            channelLog.send({
+                embeds: [
+                    new EmbedBuilder()
+                        .setTitle('Произошла ошибка войса')
+                        .setDescription(`Присоединение ` + err)
+                        .setColor(Colors.Red)
+                        .setTimestamp()
+                ]
+            });
+        }
     }
 
     if (oldChannel && newChannel && oldChannel.id !== newChannel.id) {
-        await AddVoiceToDB(oldState.member!.user, currentTime - map.get(newState.member!.id));
-        await AddExpToDatabase(oldState.member!.user, Math.floor((currentTime - map.get(newState.member!.id)) / 10000));
-        await AddBalanceToDB(newState.member!.user, Math.floor((currentTime - map.get(newState.member!.id)) / 1000));
-        map.delete(newState.member!.id);
-        map.set(newState.member!.id, currentTime);
+        try {
+            await AddVoiceToDB(oldState.member!.user, currentTime - map.get(newState.member!.id));
+            await AddExpToDatabase(oldState.member!.user, Math.floor((currentTime - map.get(newState.member!.id)) / 10000));
+            await AddBalanceToDB(newState.member!.user, Math.floor((currentTime - map.get(newState.member!.id)) / 1000));
+            map.delete(newState.member!.id);
+            map.set(newState.member!.id, currentTime);
 
-        channelLog.send({
-            embeds: [
-                new EmbedBuilder()
-                    .setAuthor({ name: `Участник перешел в другой канал`, iconURL: `${newState.member?.user.displayAvatarURL()}` })
-                    .setDescription(`${newState.member!.user.tag} перешел из канала ${oldChannel} в канал ${newChannel}`)
-                    .setColor(Colors.Grey)
-                    .setTimestamp()
-            ]
-        })
+            channelLog.send({
+                embeds: [
+                    new EmbedBuilder()
+                        .setAuthor({ name: `Участник перешел в другой канал`, iconURL: `${newState.member?.user.displayAvatarURL()}` })
+                        .setDescription(`${newState.member!.user.tag} перешел из канала ${oldChannel} в канал ${newChannel}`)
+                        .setColor(Colors.Grey)
+                        .setTimestamp()
+                ]
+            });
+        } catch (err) {
+            console.error(err);
+            channelLog.send({
+                embeds: [
+                    new EmbedBuilder()
+                        .setTitle('Произошла ошибка войса')
+                        .setDescription(`Переход ` + err)
+                        .setColor(Colors.Red)
+                        .setTimestamp()
+                ]
+            });
+        }
     }
 
     if (oldChannel !== null && newChannel === null) {
-        await AddVoiceToDB(oldState.member!.user, currentTime - map.get(newState.member!.id));
-        await AddExpToDatabase(oldState.member!.user, Math.floor((currentTime - map.get(newState.member!.id)) / 60000));
-        await AddBalanceToDB(newState.member!.user, Math.floor((currentTime - map.get(newState.member!.id)) / 60000));
+        try {
+            await AddVoiceToDB(oldState.member!.user, currentTime - map.get(newState.member!.id));
+            await AddExpToDatabase(oldState.member!.user, Math.floor((currentTime - map.get(newState.member!.id)) / 60000));
+            await AddBalanceToDB(newState.member!.user, Math.floor((currentTime - map.get(newState.member!.id)) / 60000));
 
-        map.delete(newState.member!.id);
-        channelLog.send({
-            embeds: [
-                new EmbedBuilder()
-                    .setAuthor({ name: `Участник покинул голосовой канал`, iconURL: `${newState.member!.displayAvatarURL()}` })
-                    .setDescription(`Участник ${newState.member}, покинул голосовой канал ${oldState.channel}`)
-                    .setColor(Colors.Yellow)
-                    .setTimestamp()
-            ]
-        })
+            map.delete(newState.member!.id);
+            channelLog.send({
+                embeds: [
+                    new EmbedBuilder()
+                        .setAuthor({ name: `Участник покинул голосовой канал`, iconURL: `${newState.member!.displayAvatarURL()}` })
+                        .setDescription(`Участник ${newState.member}, покинул голосовой канал ${oldState.channel}`)
+                        .setColor(Colors.Yellow)
+                        .setTimestamp()
+                ]
+            });
+        } catch (err) {
+            console.error(err);
+            channelLog.send({
+                embeds: [
+                    new EmbedBuilder()
+                        .setTitle('Произошла ошибка войса')
+                        .setDescription(`Лив ` + err)
+                        .setColor(Colors.Red)
+                        .setTimestamp()
+                ]
+            });
+        }
     }
 })

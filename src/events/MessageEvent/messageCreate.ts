@@ -17,7 +17,7 @@ client.on('messageCreate', async message => {
 
     const channel = message.channel as TextChannel;
 
-    if (messageCoutToGift >= 100) {
+    if (messageCoutToGift >= 2) {
             messageCoutToGift = 0;
             await getBoxGiftTimely(channel);
         } else if (message.channel.id === '1397730981871620298') {
