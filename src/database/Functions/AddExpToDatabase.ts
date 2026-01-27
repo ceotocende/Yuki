@@ -11,7 +11,7 @@ export default async function AddExpToDatabase(user: User, exp: number) {
             try {
                 userDb.exp = Number(userDb.exp) + exp;
                 userDb.save();
-                await CheckLvl(user);
+                await CheckLvl(user, user.client.guilds.cache.get('1397730981124767878')!);
             } catch (err) {
                 console.error('ошибка в добавление опыта: ' + err);
             }
