@@ -10,16 +10,16 @@ const map = new Map();
 
 
 client.on('voiceStateUpdate', async (oldState, newState) => {
-    if ((oldState.guild.id !== channelsId.guildId) || (newState.guild.id !== channelsId.guildId)) return;
-
-    const oldChannel = oldState.channel;
-    const newChannel = newState.channel;
- 
-    const currentTime = Date.now();
     const channelLog = newState.guild.channels.cache.get(channelsId.voiceLog) as TextChannel;
+    try {
+        if ((oldState.guild.id !== channelsId.guildId) || (newState.guild.id !== channelsId.guildId)) return;
 
-    if (newState.channel !== null && oldChannel === null) {
-        try {
+        const oldChannel = oldState.channel;
+        const newChannel = newState.channel;
+
+        const currentTime = Date.now();
+
+        if (newState.channel !== null && oldChannel === null) {
             map.set(newState.member!.id, currentTime);
             await AddUserToDB(newState.member!.user);
             channelLog.send({
@@ -31,22 +31,11 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
                         .setTimestamp()
                 ]
             });
-        } catch (err) {
-            console.error(err);
-            channelLog.send({
-                embeds: [
-                    new EmbedBuilder()
-                        .setTitle('Произошла ошибка войса')
-                        .setDescription(`Присоединение ` + err)
-                        .setColor(Colors.Red)
-                        .setTimestamp()
-                ]
-            });
         }
-    }
 
-    if (oldChannel && newChannel && oldChannel.id !== newChannel.id) {
-        try {
+
+        if (oldChannel && newChannel && oldChannel.id !== newChannel.id) {
+
             await AddVoiceToDB(oldState.member!.user, currentTime - map.get(newState.member!.id));
             await AddExpToDatabase(oldState.member!.user, Math.floor((currentTime - map.get(newState.member!.id)) / 10000));
             await AddBalanceToDB(newState.member!.user, Math.floor((currentTime - map.get(newState.member!.id)) / 1000));
@@ -62,22 +51,9 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
                         .setTimestamp()
                 ]
             });
-        } catch (err) {
-            console.error(err);
-            channelLog.send({
-                embeds: [
-                    new EmbedBuilder()
-                        .setTitle('Произошла ошибка войса')
-                        .setDescription(`Переход ` + err)
-                        .setColor(Colors.Red)
-                        .setTimestamp()
-                ]
-            });
         }
-    }
 
-    if (oldChannel !== null && newChannel === null) {
-        try {
+        if (oldChannel !== null && newChannel === null) {
             await AddVoiceToDB(oldState.member!.user, currentTime - map.get(newState.member!.id));
             await AddExpToDatabase(oldState.member!.user, Math.floor((currentTime - map.get(newState.member!.id)) / 60000));
             await AddBalanceToDB(newState.member!.user, Math.floor((currentTime - map.get(newState.member!.id)) / 60000));
@@ -92,17 +68,18 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
                         .setTimestamp()
                 ]
             });
-        } catch (err) {
-            console.error(err);
-            channelLog.send({
-                embeds: [
-                    new EmbedBuilder()
-                        .setTitle('Произошла ошибка войса')
-                        .setDescription(`Лив ` + err)
-                        .setColor(Colors.Red)
-                        .setTimestamp()
-                ]
-            });
+
         }
+    } catch (err) {
+        console.error(err);
+        channelLog.send({
+            embeds: [
+                new EmbedBuilder()
+                    .setTitle('Произошла ошибка войса')
+                    .setDescription('a' + err)
+                    .setColor(Colors.Red)
+                    .setTimestamp()
+            ]
+        });
     }
 })
