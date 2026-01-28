@@ -20,15 +20,15 @@ export default async function AddVoiceToDB(user: User, time: number) {
         if (isNaN(time)) {
             return;
         } else if (!userDb) {
-            const newRate = await RateDB.create({ user_id: user.id, voice: String(Math.floor(time === 0 ? 1 : time)), symbols: 0});
-            const newRecords = await RecordsDB.create({ user_id: user.id, voice_time: String(Math.floor(time === 0 ? 1 : time)),commands_count: 0, count_symbol: 0, exp_currency: 0, message_count: 0 });
+            const newRate = await RateDB.create({ user_id: user.id, voice: String(Math.floor(isNaN(time) ? 1 : time)), symbols: 0});
+            const newRecords = await RecordsDB.create({ user_id: user.id, voice_time: String(Math.floor(isNaN(time) ? 1 : time)),commands_count: 0, count_symbol: 0, exp_currency: 0, message_count: 0 });
             // exp: Math.floor(time / 1000), first_currency: Math.floor(time / 1000), second_currency: 0, rank: Math.floor(time / 1000) 
             newRate.save();
             newRecords.save();
         } else if (userDb.user_id === user.id) {
             try {
-                userRateDb.voice = String(Number(userRateDb.voice) + Math.floor(time === 0 ? 1 : time));
-                userRecordDb.voice_time = String(Number(userRecordDb.voice_time) + Math.floor(time === 0 ? 1 : time));
+                userRateDb.voice = String(Number(userRateDb.voice) + Math.floor(isNaN(time) ? 1 : time));
+                userRecordDb.voice_time = String(Number(userRecordDb.voice_time) + Math.floor(isNaN(time) ? 1 : time));
                 userRecordDb.save();
                 userRateDb.save();
             } catch(err) {
