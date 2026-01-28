@@ -23,10 +23,14 @@ export default async function AddVoiceToDB(user: User, time: number) {
             newRate.save();
             newRecords.save();
         } else if (userDb.user_id === user.id) {
-            userRateDb.voice = String(Number(userRateDb.voice) + Math.floor(time));
-            userRecordDb.voice_time = String(Number(userRecordDb.voice_time) + Math.floor(time));
-            userRecordDb.save();
-            userRateDb.save();
+            try {
+                userRateDb.voice = String(Number(userRateDb.voice) + Math.floor(time));
+                userRecordDb.voice_time = String(Number(userRecordDb.voice_time) + Math.floor(time));
+                userRecordDb.save();
+                userRateDb.save();
+            } catch(err) {
+                console.error('Ошибка добавления войс времени' + err)
+            }
         } else {
             console.log('!error function addVoiceTime please chek this function!')
         }

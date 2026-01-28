@@ -12,5 +12,5 @@ Client.once('clientReady', async (client) => {
     const channelSendStart = await guild!.channels.cache.get('1447690029362188560') as TextChannel;
 
     channelSendStart.send('Хозяин, я проснулась!');
-    await TableSync();
+    await TableSync(channelSendStart);
 });

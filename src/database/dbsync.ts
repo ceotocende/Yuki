@@ -5,8 +5,9 @@ import sequelize from "./sequelize";
 import { ShopDB } from "./Models/MainModels/ShopModels";
 import { RateDB } from "./Models/MainModels/RateModel";
 import { UsersItems } from "./Models/SecondsModels/UsersItemsModel";
+import { TextChannel } from "discord.js";
 
-export async function TableSync() {
+export async function TableSync(channel: TextChannel) {
   try {
     await Users.sync();
     await RecordsDB.sync();
@@ -19,7 +20,14 @@ export async function TableSync() {
 
     await sequelize.authenticate();
     console.log(`[${sequelize.getDatabaseName()}]: авторизованна`)
+
+    channel.send({
+      content: `[${sequelize.getDatabaseName()}]: авторизованна`
+    })
   } catch (err) {
-    console.log(`[Произошла ошибка в базе данных]: ${new Date()} ${err}`)
+    console.log(`[Произошла ошибка в базе данных]: ${new Date()} ${err}`);
+    channel.send({
+      content: `[Произошла ошибка в базе данных]: ${new Date()} ${err}`
+    })
   }
 };

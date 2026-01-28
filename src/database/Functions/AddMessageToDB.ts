@@ -14,11 +14,15 @@ export default async function AddMessageToDB(user: User, message: string) {
     if (!userRecordDb) return await AddUserToDB(user);
 
     if (userDb && userRateDb && userRecordDb) {
-        userRateDb.symbols = Number(userRateDb.symbols) + message.replace(" ", "").length;
-        userRecordDb.count_symbol = Number(userRecordDb.count_symbol) + message.replace(" ", "").length;
-        userRecordDb.message_count = Number(userRecordDb.message_count) + 1;
-        userRateDb.save();
-        userRecordDb.save();
-        return;
+        try {
+            userRateDb.symbols = Number(userRateDb.symbols) + message.replace(" ", "").length;
+            userRecordDb.count_symbol = Number(userRecordDb.count_symbol) + message.replace(" ", "").length;
+            userRecordDb.message_count = Number(userRecordDb.message_count) + 1;
+            userRateDb.save();
+            userRecordDb.save();
+            return;
+        } catch (err) {
+            console.error("Ошибка доавбления сообщения " + err)
+        }
     }
 }

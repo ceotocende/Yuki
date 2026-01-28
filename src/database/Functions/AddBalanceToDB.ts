@@ -10,8 +10,12 @@ export default async function AddBalanceToDB(user: User, balance: number) {
     if (!userDb) return await AddUserToDB(user);
 
     if (userDb) {
-        userDb.balance = Number(userDb.balance) + balance;
-        userDb.save();
-        return;
+        try {
+            userDb.balance = Number(userDb.balance) + balance;
+            userDb.save();
+            return;
+        } catch (err) {
+            console.error("Ошибка добавления баланса" + err)
+        }
     }
 }
