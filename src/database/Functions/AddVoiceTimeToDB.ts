@@ -9,6 +9,9 @@ export default async function AddVoiceToDB(user: User, time: number) {
     const userRateDb = await RateDB.findOne({ where: { user_id: user.id } });
     const userRecordDb = await RecordsDB.findOne({ where: { user_id: user.id } });
 
+    console.log(user)
+    console.log(time)
+
     if (!userDb) return await AddUserToDB(user);
     if (!userRateDb) return await AddUserToDB(user);
     if (!userRecordDb) return await AddUserToDB(user);
