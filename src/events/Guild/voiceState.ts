@@ -54,11 +54,11 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
         }
 
         if (oldChannel !== null && newChannel === null) {
-            await AddVoiceToDB(oldState.member!.user, currentTime - map.get(newState.member!.id));
-            await AddExpToDatabase(oldState.member!.user, Math.floor((currentTime - map.get(newState.member!.id)) / 60000));
-            await AddBalanceToDB(newState.member!.user, Math.floor((currentTime - map.get(newState.member!.id)) / 60000));
+            console.log(newState.member!.user)
+            await AddVoiceToDB(oldState.member!.user, !(currentTime - map.get(newState.member!.id)) ? 1 : (currentTime - map.get(newState.member!.id)));
+            await AddExpToDatabase(oldState.member!.user, Math.floor(!(currentTime - map.get(newState.member!.id)) ? 1 : (currentTime - map.get(newState.member!.id)) / 60000));
+            await AddBalanceToDB(newState.member!.user, Math.floor(!(currentTime - map.get(newState.member!.id)) ? 1 : (currentTime - map.get(newState.member!.id)) / 60000));
 
-            map.delete(newState.member!.id);
             channelLog.send({
                 embeds: [
                     new EmbedBuilder()
