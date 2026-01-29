@@ -17,6 +17,8 @@ export default new client.command({
             .setName('num')
             .setDescription('Выберите сумму для ролла')
             .setRequired(true)
+            .setMinValue(1)
+            .setMaxValue(200000)
         ),
     run: async (client, interaction) => {
         const targetUser = interaction.options.getUser('user')!;
@@ -24,6 +26,19 @@ export default new client.command({
 
         const userDb = await Users.findOne({ where: { user_id: interaction.user.id } });
         const targetUserDb = await Users.findOne({ where: { user_id: targetUser.id } });
+        
+        if (sumRoll <= 0) {
+            return interaction.reply({
+                embeds: [
+                    new EmbedBuilder()  
+                        .setTitle('Ошибка')
+                        .setDescription('Выберите сумму не равную нулю и не меньше нуля')
+                        .setColor('Red')
+                        .setTimestamp()
+                ],
+                ephemeral: true
+            })
+        }
 
         if (!userDb) {
             await AddUserToDB(interaction.user);
@@ -181,7 +196,7 @@ export default new client.command({
                                 })
                             }, 10);
                         } else {
-                            subInteraction.reply({
+                            return subInteraction.reply({
                                 content: 'Не трогайте их пожалуйста)'
                             })
                         }
