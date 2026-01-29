@@ -13,6 +13,8 @@ client.on('interactionCreate', async (interaction) => {
         const channel = interaction.guild;
         if (!channel) return;
         const channelLog = channel.channels.cache.get(channelsId.voiceLog) as TextChannel;
+        
+        if (!interaction.inGuild()) return;
 
         if (!command) return;
 
@@ -23,12 +25,19 @@ client.on('interactionCreate', async (interaction) => {
             userRecordsDb.save();
         } catch (err) {
             console.error(err);
-            interaction.reply({ ephemeral: true, content: "Произошла ошибка при выполнение команды" });
+            interaction.reply({ ephemeral: true, embeds: [
+                new EmbedBuilder()
+                    .setTitle('Произошла ошибка')
+                    .setDescription('Произошла ошибка при выполнении команды')
+                    .setColor('Red')
+                    .setTimestamp()
+            ] });
+            
             channelLog.send({
                 embeds: [
                     new EmbedBuilder()
-                        .setTitle('Произошла ошибка войса')
-                        .setDescription(`Присоединение ` + err)
+                        .setTitle('Произошла ошибка команд')
+                        .setDescription("Команда " + err)
                         .setColor('Red')
                         .setTimestamp()
                 ]

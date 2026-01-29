@@ -1,18 +1,23 @@
-import { 
-    ActionRowBuilder, 
-    ButtonBuilder, 
-    ButtonStyle, 
-    EmbedBuilder, 
-    GuildMemberRoleManager, 
-    StringSelectMenuBuilder, 
-    SlashCommandBuilder, 
-    StringSelectMenuOptionBuilder 
+import {
+    ActionRowBuilder,
+    ButtonBuilder,
+    ButtonStyle,
+    EmbedBuilder,
+    GuildMemberRoleManager,
+    StringSelectMenuBuilder,
+    SlashCommandBuilder,
+    StringSelectMenuOptionBuilder,
+    TextChannel,
+    User,
+    APIInteractionGuildMember,
+    GuildMember
 } from "discord.js";
 import { client } from "../..";
 import { Users } from "../../database/Models/MainModels/UsersModels";
-import { colors } from "../../utils/config";
+import { channelsId, colors } from "../../utils/config";
 import { ShopDB } from "../../database/Models/MainModels/ShopModels";
 import { UsersItems } from "../../database/Models/SecondsModels/UsersItemsModel";
+import AddUserToDB from "../../database/Functions/AddUsersToDB";
 
 const list = 10;
 const pagePare = 5;
@@ -21,7 +26,11 @@ let page = 1;
 export default new client.command({
     structure: new SlashCommandBuilder()
         .setName('магазин')
-        .setDescription('открыть магазин'),
+        .setDescription('открыть магазин')
+        .addUserOption(op => op
+            .setName('user')
+            .setDescription('Или купить другому пользователю роль (необязательно)')
+        ),
     run: async (client, interaction) => {
         const shop = await ShopDB.findAll({
             attributes: [
@@ -32,12 +41,14 @@ export default new client.command({
             raw: true
         });
 
+        const userTarget = interaction.options.getUser('user') || interaction.user;
+
         const userBal = await Users.findOne({ where: { user_id: interaction.user.id } });
 
         const roleId = shop.map(shop => shop.cost);
         const roleIds = shop.map(shop => shop.item_id);
         const pageList = Math.ceil(roleId.length / list);
-        const member1 = interaction.user;
+        const member1 = userTarget;
 
         await interaction.deferReply();
 
@@ -82,22 +93,22 @@ export default new client.command({
                 if (subInteraction.customId === 'shopRoleMenu') {
                     await subInteraction.deferUpdate();
                     let roleId = subInteraction.values[0];
-                    const userRoles = await UsersItems.findOne({ 
-                        where: { 
-                            user_id: member1.id, 
-                            item_id: roleId 
-                        } 
+                    const userRoles = await UsersItems.findOne({
+                        where: {
+                            user_id: member1.id,
+                            item_id: roleId
+                        }
                     });
                     const roleMap = new Map(shop.map(role => [role.item_id, role.cost]));
                     const shopItem = shop.find(role => role.item_id === roleId);
-                    
+
                     if (!shopItem) {
                         return;
                     }
-                    
+
                     const roleBye = Number(shopItem.cost);
                     const roleByeId = String(shopItem.item_id);
-                    
+
                     if (roleIds.includes(subInteraction.values[0])) {
                         if (!userBal) {
                             const embed = new EmbedBuilder()
@@ -105,7 +116,9 @@ export default new client.command({
                                 .setDescription(`Вас нет в базе данных`)
                                 .setColor(`#${colors.stable}`)
                                 .setTimestamp();
-                            
+
+                            await AddUserToDB(interaction.user);
+
                             return await subInteraction.followUp({
                                 embeds: [embed],
                                 ephemeral: true
@@ -117,7 +130,7 @@ export default new client.command({
                                 .setDescription(`У вас слишком мало средств \n Узнать свой баланс можно командой \`/профиль\` или \`/ранг\``)
                                 .setColor(`#${colors.stable}`)
                                 .setTimestamp();
-                            
+
                             return await subInteraction.followUp({
                                 embeds: [embed],
                                 ephemeral: true
@@ -128,68 +141,109 @@ export default new client.command({
                                 .setDescription('У вас недостаточно средств \n Узнать свой баланс можно командой \`/профиль\` или \`/ранг\`')
                                 .setColor(`#${colors.stable}`)
                                 .setTimestamp();
-                            
+
                             return await subInteraction.followUp({
                                 embeds: [embed],
                                 ephemeral: true
                             });
                         } else {
-                            const memberRole = subInteraction.member!.roles as GuildMemberRoleManager;
-                            
-                            if (memberRole.cache.has(roleByeId)) {
-                                const embed = new EmbedBuilder()
-                                    .setTitle('Ошибка')
-                                    .setDescription(`У вас уже есть роль <@&${roleByeId}>`)
-                                    .setColor(`#${colors.stable}`)
-                                    .setTimestamp();
-                                
-                                return await subInteraction.followUp({
-                                    embeds: [embed],
-                                    ephemeral: true
-                                });
-                            } else if (!userRoles) {
-                                await UsersItems.create({ 
-                                    user_id: subInteraction.user.id, 
-                                    item_id: subInteraction.values[0] 
-                                });
-                                
-                                userBal.balance = Number(userBal.balance) - roleBye;
-                                await userBal.save();
-                                
-                                try {
-                                    await memberRole.add(roleByeId);
-                                } catch (error) {
-                                    console.error('Ошибка при добавлении роли:', error);
+                            const guild = subInteraction.guild;
+                            if (!guild) {
+                                return subInteraction.followUp({
+                                    embeds: [
+                                        new EmbedBuilder()
+                                            .setTitle('Произошла ошибка')
+                                            .setDescription('Не могу найти дискорд сервер')
+                                            .setColor('Red')
+                                            .setTimestamp()
+                                    ]
+                                })
+                            }
+                            else {
+                                const member = await guild.members.fetch(`${userTarget.id}`)
+                                const memberRole = member.roles as GuildMemberRoleManager;
+
+                                if (memberRole.cache.has(roleByeId)) {
+                                    const embed = new EmbedBuilder()
+                                        .setTitle('Ошибка')
+                                        .setDescription(`У ${userTarget !== interaction.user ? `пользователя ${userTarget}` : 'вас'} уже есть роль <@&${roleByeId}>`)
+                                        .setColor(`#${colors.stable}`)
+                                        .setTimestamp();
+
+                                    return await subInteraction.followUp({
+                                        embeds: [embed],
+                                        ephemeral: true
+                                    });
+                                } else if (!userRoles) {
+                                    await UsersItems.create({
+                                        user_id: userTarget.id,
+                                        item_id: subInteraction.values[0]
+                                    });
+
+                                    userBal.balance = Number(userBal.balance) - roleBye;
+                                    await userBal.save();
+
+                                    try {
+                                        await memberRole.add(roleByeId);
+                                    } catch (error) {
+                                        console.error('Ошибка при добавлении роли:', error);
+                                        const channels = interaction.guild!.channels.cache.get(channelsId.voiceLog) as TextChannel;
+                                        channels.send({
+                                            embeds: [
+                                                new EmbedBuilder()
+                                                    .setTitle('Ошибка')
+                                                    .setDescription(`Произошла ошибка в магазане: добавление роли\n ${error}`)
+                                                    .setColor('Red')
+                                                    .setTimestamp()
+                                            ]
+                                        })
+                                        return subInteraction.followUp({
+                                            embeds: [
+                                                new EmbedBuilder()
+                                                    .setTitle('Произошла ошибка')
+                                                    .setDescription('Обратитесь к разработчику')
+                                                    .setColor('Red')
+                                                    .setTimestamp()
+                                            ],
+                                            ephemeral: true
+                                        })
+                                    }
+
+                                    const embed = new EmbedBuilder()
+                                        .setTitle('Поздравляем!')
+                                        .setDescription(`Поздравляем с покупкой роли ${userTarget !== interaction.user ? `пользователю ${userTarget}` : ''} <@&${roleByeId}>`)
+                                        .setColor(`#${colors.stable}`)
+                                        .setTimestamp();
+
+                                    const roleFetch = await guild.roles.fetch(roleByeId);
+
+                                    if (!roleFetch) return;
+                                    
+                                    await messageToUser(userTarget, roleFetch.name, interaction.user.id);
+
+                                    return await subInteraction.followUp({
+                                        embeds: [embed],
+                                        ephemeral: true
+                                    });
+                                } else if (userRoles.item_id === roleByeId) {
+                                    const embed = new EmbedBuilder()
+                                        .setTitle('Ошибка')
+                                        .setDescription(`У вас уже есть эта роль`)
+                                        .setColor(`#${colors.stable}`)
+                                        .setTimestamp();
+
+                                    return await subInteraction.followUp({
+                                        embeds: [embed],
+                                        ephemeral: true
+                                    });
                                 }
-                                
-                                const embed = new EmbedBuilder()
-                                    .setTitle('Поздравляем!')
-                                    .setDescription(`Поздравляем с покупкой роли <@&${roleByeId}>`)
-                                    .setColor(`#${colors.stable}`)
-                                    .setTimestamp();
-                                
-                                return await subInteraction.followUp({
-                                    embeds: [embed],
-                                    ephemeral: true
-                                });
-                            } else if (userRoles.item_id === roleByeId) {
-                                const embed = new EmbedBuilder()
-                                    .setTitle('Ошибка')
-                                    .setDescription(`У вас уже есть эта роль`)
-                                    .setColor(`#${colors.stable}`)
-                                    .setTimestamp();
-                                
-                                return await subInteraction.followUp({
-                                    embeds: [embed],
-                                    ephemeral: true
-                                });
                             }
                         }
                     }
                 }
             } else if (subInteraction.isButton()) {
                 await subInteraction.deferUpdate();
-                
+
                 switch (subInteraction.customId) {
                     case 'buttonBackShop':
                         page -= 1;
@@ -203,17 +257,17 @@ export default new client.command({
                     default:
                         return;
                 }
-                
+
                 const embed = await pagination(shop, page, list, pagePare);
                 const rowMenu = generateMenu(shop, page, list, pagePare);
-                
+
                 row.components[0].setDisabled(page === 1);
                 row.components[2].setDisabled(page === pageList);
                 row.components[1].setDisabled(page === 1);
 
-                await message.edit({ 
-                    embeds: [embed], 
-                    components: [row, rowMenu] 
+                await message.edit({
+                    embeds: [embed],
+                    components: [row, rowMenu]
                 });
 
                 collector.resetTimer();
@@ -236,7 +290,7 @@ export default new client.command({
                 .setDescription(`Магазин вызван ${member1}`)
                 .setColor(`#${colors.stable}`)
                 .setTimestamp();
-            
+
             try {
                 await message.edit({
                     embeds: [embedEnd],
@@ -270,7 +324,7 @@ async function pagination(data: any[], page: number, rowsPerPage: number, pagesP
             `,
         });
     });
-    
+
     embed.setFooter({ text: `Страница ${page} из ${pagesCount}` });
     return embed;
 }
@@ -284,7 +338,7 @@ function generateMenu(data: any[], page: number, rowsPerPage: number, pagesPerGr
         .setPlaceholder('Выберите роль для покупки');
 
     const row = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(top);
-    
+
     data.slice(from, to).forEach((item, index) => {
         top.addOptions(
             new StringSelectMenuOptionBuilder()
@@ -292,6 +346,22 @@ function generateMenu(data: any[], page: number, rowsPerPage: number, pagesPerGr
                 .setValue(String(item.item_id))
         );
     });
-    
+
     return row;
+}
+
+async function messageToUser(user: User, roleByeId: string, userPapi: string) {
+    try {
+        await user.send({
+            embeds: [
+                new EmbedBuilder()
+                    .setTitle('Привет!')
+                    .setDescription(`Тебе купил <@${userPapi}> роль \`\`\`${roleByeId}\`\`\`!`)
+                    .setColor('Green')
+                    .setTimestamp()
+            ]
+        });
+    } catch (error) {
+        console.error("Не удалось отправить ЛС. Возможно, пользователь запретил ЛС от ботов.");
+    }
 }

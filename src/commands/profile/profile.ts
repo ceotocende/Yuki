@@ -5,7 +5,7 @@ import { RateDB } from "../../database/Models/MainModels/RateModel";
 import { RecordsDB } from "../../database/Models/MainModels/RecordsModel";
 import AddUserToDB from "../../database/Functions/AddUsersToDB";
 import getMonth from "../../functions/getMonth";
-import { colors } from "../../utils/config";
+import { colors, embedErrFromInteractions } from "../../utils/config";
 import formatTimeForProfile from "../../utils/formatTimeForProfile";
 
 export default new client.command({
@@ -13,8 +13,8 @@ export default new client.command({
         .setName('профиль')
         .setDescription('Отобразить свой профиль или участника')
         .addUserOption(op => op
-                .setName('пользователь')
-                .setDescription('Выбрать пользователя (необезательно)')
+            .setName('пользователь')
+            .setDescription('Выбрать пользователя (необезательно)')
         ),
     run: async (client, interaction) => {
         const targetUser = interaction.options.getUser('пользователь') || interaction.user;
@@ -28,7 +28,12 @@ export default new client.command({
         if (!userDb || !userRateDb || !userRecordDb) {
             await AddUserToDB(targetUser);
 
-            interaction.reply({ content: 'Вас или пользователя нет в базе данных, попробуйте еще раз', ephemeral: true });
+            interaction.reply({
+                embeds: [
+                    embedErrFromInteractions
+                ],
+                ephemeral: true
+            });
         } else {
             interaction.reply({
                 embeds: [

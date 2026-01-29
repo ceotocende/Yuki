@@ -12,7 +12,7 @@ export const embedErrFromInteractions = new EmbedBuilder()
 
 export const embedErrFromUserDb = new EmbedBuilder()
     .setAuthor({ name: `Ошибка` })
-    .setDescription('К сожалению вас или участника нет в базе данных.\nНапишите что нибудь в любой чат и я вас обязательно добавлю!')
+    .setDescription('К сожалению вас или пользователя нет в базе данных.\nВероятнее после этого сообщения я вас или пользователя уже добавила в базу данных!')
     .setColor('Red')
     .setTimestamp()
 

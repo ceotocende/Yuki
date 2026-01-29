@@ -13,7 +13,9 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
     const channelLog = newState.guild.channels.cache.get(channelsId.voiceLog) as TextChannel;
     try {
         if ((oldState.guild.id !== channelsId.guildId) || (newState.guild.id !== channelsId.guildId)) return;
-
+        if (oldState.member?.user.bot) return;
+        if (newState.member?.user.bot) return;
+        
         const oldChannel = oldState.channel;
         const newChannel = newState.channel;
 

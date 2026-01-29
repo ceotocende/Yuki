@@ -1,4 +1,4 @@
-import { AttachmentBuilder, EmbedBuilder, SlashCommandBuilder } from "discord.js";
+import { AttachmentBuilder, EmbedBuilder, SlashCommandBuilder, TextChannel } from "discord.js";
 import { client } from "../..";
 import { Canvas, createCanvas, loadImage } from "canvas";
 import path from "node:path";
@@ -7,6 +7,7 @@ import AddUserToDB from "../../database/Functions/AddUsersToDB";
 import formatTimeForProfile from "../../utils/formatTimeForProfile";
 import { RateDB as RateDB } from "../../database/Models/MainModels/RateModel";
 import { RecordsDB } from "../../database/Models/MainModels/RecordsModel";
+import { channelsId } from "../../utils/config";
 
 const applyText = (canvas: Canvas, text: string, rank: string) => {
     const context = canvas.getContext('2d');
@@ -205,7 +206,26 @@ export default new client.command({
 
             } catch (error) {
                 console.error('Ошибка при создании изображения:', error);
-                await interaction.editReply('Произошла ошибка при создании изображения.');
+                const channels = interaction.guild!.channels.cache.get(channelsId.voiceLog) as TextChannel;
+                channels.send({
+                    embeds: [
+                        new EmbedBuilder()
+                            .setTitle('Ошибка')
+                            .setDescription(`Произошла ошибка в ранге\n ${error}`)
+                            .setColor('Red')
+                            .setTimestamp()
+                    ]
+                });
+                await interaction.editReply({
+                    embeds: [
+                        new EmbedBuilder()
+                            .setTitle('Произошла ошибка')
+                            .setDescription('Произошла ошибка при создании изображения')
+                            .setColor('Red')
+                            .setTimestamp()
+                    ]
+                });
+
             }
         }
     }
