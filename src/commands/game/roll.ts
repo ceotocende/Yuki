@@ -195,13 +195,7 @@ export default new client.command({
                                     }
                                 })
                             }, 10);
-                        } else {
-                            return subInteraction.reply({
-                                content: 'Не трогайте их пожалуйста)'
-                            })
-                        }
-
-                        if (customId === 'buttonRejectionRoll' && (subInteraction.user.id === targetUser.id)) {
+                        } else if ((customId === 'buttonRejectionRoll') && (subInteraction.user.id === targetUser.id)) {
                             message.edit({
                                 content: ' ',
                                 components: [],
@@ -213,9 +207,7 @@ export default new client.command({
                                         .setTimestamp()
                                 ]
                             });
-                        }
-
-                        if (customId === 'buttonRejectionRoll' && (subInteraction.user.id === interaction.user.id)) {
+                        } else if ((customId === 'buttonRejectionRoll') && (subInteraction.user.id === interaction.user.id)) {
                             message.edit({
                                 content: ' ',
                                 components: [],
@@ -227,6 +219,10 @@ export default new client.command({
                                         .setTimestamp()
                                 ]
                             });
+                        } else {
+                            return subInteraction.reply({
+                                content: 'Не трогайте их пожалуйста)'
+                            })
                         }
                     }
                 }
