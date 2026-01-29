@@ -70,8 +70,12 @@ export default class extends Client {
             });
 
             console.log('Finished loading app commands.');
+
+            return 'Finished loading app commands.';
         } catch (e) {
             console.error(e);
+
+            return "error " + e;
         };
     };
 
