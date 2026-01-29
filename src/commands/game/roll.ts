@@ -85,115 +85,134 @@ export default new client.command({
 
             const collector = message.createMessageComponentCollector({ time: 300000 });
 
-            collector.on('collect', subInteraction => {
-                if ((subInteraction.user.id !== targetUser.id) || (subInteraction.user.id !== interaction.user.id)) return;
+            collector.on('collect', async subInteraction => {
+                if ((subInteraction.user.id === targetUser.id) || (subInteraction.user.id === interaction.user.id)) {
+                    if (subInteraction.isButton()) {
+                        const customId = subInteraction.customId;
+                        if ((customId === 'buttonRoll') && (subInteraction.user.id === targetUser.id)) {
+                            setTimeout(() => {
+                                message.edit({
+                                    embeds: [
+                                        new EmbedBuilder()
+                                            .setTitle('Ролл принят!')
+                                            .setDescription(`${interaction.user} и ${targetUser} роллят на сумму \`${sumRoll}\` монеток..`)
+                                            .setColor('DarkRed')
+                                            .setTimestamp()
+                                    ],
+                                    components: [],
+                                    content: ''
+                                }).then((msg) => {
+                                    const rollFirst = Roll();
+                                    const rollSecond = Roll();
 
-                if (subInteraction.isButton()) {
-                    const customId = subInteraction.customId;
+                                    if (rollFirst > rollSecond) {
+                                        setTimeout(() => {
+                                            message.edit({
+                                                embeds: [
+                                                    new EmbedBuilder()
+                                                        .setTitle('Ролл закончен!')
+                                                        .setDescription(`${interaction.user} выигрывает у ${targetUser} со значением \`${rollFirst}\` против \`${rollSecond}\`.\nПоздравляем, ваша награда \`${sumRoll}\` монеток.`)
+                                                        .setColor('Green')
+                                                        .setTimestamp()
+                                                ],
+                                                components: [],
+                                                content: ''
+                                            });
+                                        }, 5000);
 
-                    if ((customId === 'buttonRoll') && (subInteraction.user.id !== targetUser.id)) {
-                        setTimeout(() => {
+                                        userDb.balance = Number(userDb.balance) + sumRoll;
+                                        targetUserDb.balance = Number(targetUserDb.balance) - sumRoll;
+                                        userDb.save();
+                                        targetUserDb.save();
+                                    } else if (rollFirst < rollSecond) {
+                                        setTimeout(() => {
+                                            message.edit({
+                                                embeds: [
+                                                    new EmbedBuilder()
+                                                        .setTitle('Ролл закончен!')
+                                                        .setDescription(`${targetUser} выигрывает у ${interaction.user} со значением \`${rollSecond}\` против \`${rollFirst}\`.\nПоздравляем, ваша награда \`${sumRoll}\` монеток.`)
+                                                        .setColor('Green')
+                                                        .setTimestamp()
+                                                ],
+                                                components: [],
+                                                content: ''
+                                            });
+                                        }, 5000);
+
+                                        userDb.balance = Number(userDb.balance) - sumRoll;
+                                        targetUserDb.balance = Number(targetUserDb.balance) + sumRoll;
+                                        userDb.save();
+                                        targetUserDb.save();
+                                    } else if (rollFirst === rollSecond) {
+                                        setTimeout(() => {
+                                            message.edit({
+                                                embeds: [
+                                                    new EmbedBuilder()
+                                                        .setTitle('Ролл закончен!')
+                                                        .setDescription(`${targetUser} и ${interaction.user} закончили ролл в ничью со значениями \`${rollSecond}\` и \`${rollFirst}\`.\nНикто не победил, сумма вычесляется у пользователей в размере \`${sumRoll}\` монеток.`)
+                                                        .setColor(`#${colors.stable}`)
+                                                        .setTimestamp()
+                                                ],
+                                                components: [],
+                                                content: ''
+                                            });
+                                        }, 5000);
+
+                                        userDb.balance = Number(userDb.balance) - sumRoll;
+                                        targetUserDb.balance = Number(targetUserDb.balance) - sumRoll;
+                                        userDb.save();
+                                        targetUserDb.save();
+                                    } else {
+                                        setTimeout(() => {
+                                            message.edit({
+                                                embeds: [
+                                                    new EmbedBuilder()
+                                                        .setTitle('Ошибка')
+                                                        .setDescription(`Произошла ошибка, обратитесь к разработчику бота`)
+                                                        .setColor('Green')
+                                                        .setTimestamp()
+                                                ],
+                                                components: [],
+                                                content: ''
+                                            });
+                                        }, 5000);
+                                        console.log(rollFirst, rollSecond)
+                                    }
+                                })
+                            }, 10);
+                        } else {
+                            subInteraction.reply({
+                                content: 'Не трогайте их пожалуйста)'
+                            })
+                        }
+
+                        if (customId === 'buttonRejectionRoll' && (subInteraction.user.id === targetUser.id)) {
                             message.edit({
+                                content: ' ',
+                                components: [],
                                 embeds: [
                                     new EmbedBuilder()
-                                        .setTitle('Ролл принят!')
-                                        .setDescription(`${interaction.user} и ${targetUser} роллят на сумму \`${sumRoll}\` монеток..`)
-                                        .setColor('DarkRed')
+                                        .setTitle('Отказ от ролла')
+                                        .setDescription(`${targetUser} отказался роллится с участником ${interaction.user}`)
+                                        .setColor('Red')
                                         .setTimestamp()
-                                ],
+                                ]
+                            });
+                        }
+
+                        if (customId === 'buttonRejectionRoll' && (subInteraction.user.id === interaction.user.id)) {
+                            message.edit({
+                                content: ' ',
                                 components: [],
-                                content: ''
-                            }).then((msg) => {
-                                const rollFirst = Roll();
-                                const rollSecond = Roll();
-
-                                if (rollFirst > rollSecond) {
-                                    setTimeout(() => {
-                                        message.edit({
-                                            embeds: [
-                                                new EmbedBuilder()
-                                                    .setTitle('Ролл закончен!')
-                                                    .setDescription(`${interaction.user} выигрывает у ${targetUser} со значением \`${rollFirst}\` против \`${rollSecond}\`.\nПоздравляем, ваша награда \`${sumRoll}\` монеток.`)
-                                                    .setColor('Green')
-                                                    .setTimestamp()
-                                            ],
-                                            components: [],
-                                            content: ''
-                                        });
-                                    }, 10);
-
-                                    userDb.balance = Number(userDb.balance) + sumRoll;
-                                    targetUserDb.balance = Number(targetUserDb.balance) - sumRoll;
-                                    userDb.save();
-                                    targetUserDb.save();
-                                } else if (rollFirst < rollSecond) {
-                                    setTimeout(() => {
-                                        message.edit({
-                                            embeds: [
-                                                new EmbedBuilder()
-                                                    .setTitle('Ролл закончен!')
-                                                    .setDescription(`${targetUser} выигрывает у ${interaction.user} со значением \`${rollSecond}\` против \`${rollFirst}\`.\nПоздравляем, ваша награда \`${sumRoll}\` монеток.`)
-                                                    .setColor('Green')
-                                                    .setTimestamp()
-                                            ],
-                                            components: [],
-                                            content: ''
-                                        });
-                                    }, 10);
-
-                                    userDb.balance = Number(userDb.balance) - sumRoll;
-                                    targetUserDb.balance = Number(targetUserDb.balance) + sumRoll;
-                                    userDb.save();
-                                    targetUserDb.save();
-                                } else if (rollFirst === rollSecond) {
-                                    setTimeout(() => {
-                                        message.edit({
-                                            embeds: [
-                                                new EmbedBuilder()
-                                                    .setTitle('Ролл закончен!')
-                                                    .setDescription(`${targetUser} и ${interaction.user} закончили ролл в ничью со значениями \`${rollSecond}\` и \`${rollFirst}\`.\nНикто не победил, сумма вычесляется у пользователей в размере \`${sumRoll}\` монеток.`)
-                                                    .setColor(`#${colors.stable}`)
-                                                    .setTimestamp()
-                                            ],
-                                            components: [],
-                                            content: ''
-                                        });
-                                    }, 10);
-
-                                    userDb.balance = Number(userDb.balance) - sumRoll;
-                                    targetUserDb.balance = Number(targetUserDb.balance) - sumRoll;
-                                    userDb.save();
-                                    targetUserDb.save();
-                                } else {
-                                    setTimeout(() => {
-                                        message.edit({
-                                            embeds: [
-                                                new EmbedBuilder()
-                                                    .setTitle('Ошибка')
-                                                    .setDescription(`Произошла ошибка, обратитесь к разработчику бота`)
-                                                    .setColor('Green')
-                                                    .setTimestamp()
-                                            ],
-                                            components: [],
-                                            content: ''
-                                        });
-                                    }, 10);
-                                    console.log(rollFirst, rollSecond)
-                                }
-                            })
-                        }, 5000);
-                    } else if (customId === 'buttonRejectionRoll') {
-                        message.edit({
-                            content: ' ',
-                            components: [],
-                            embeds: [
-                                new EmbedBuilder()
-                                    .setTitle('Отказ от ролла')
-                                    .setDescription(`${targetUser} отказался роллится с участником ${interaction.user}`)
-                                    .setColor('Red')
-                                    .setTimestamp()
-                            ]
-                        });
+                                embeds: [
+                                    new EmbedBuilder()
+                                        .setTitle('Отказ от ролла')
+                                        .setDescription(`${interaction.user} отказался роллится с участником ${targetUser}`)
+                                        .setColor('Red')
+                                        .setTimestamp()
+                                ]
+                            });
+                        }
                     }
                 }
             });
