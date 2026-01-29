@@ -91,7 +91,7 @@ export default new client.command({
                 if (subInteraction.isButton()) {
                     const customId = subInteraction.customId;
 
-                    if (customId === 'buttonRoll') {
+                    if ((customId === 'buttonRoll') && (subInteraction.user.id !== targetUser.id)) {
                         setTimeout(() => {
                             message.edit({
                                 embeds: [
