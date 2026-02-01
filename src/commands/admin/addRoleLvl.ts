@@ -1,6 +1,5 @@
 import { SlashCommandBuilder } from "discord.js";
 import { client } from "../..";
-import { ShopDB } from "../../database/Models/MainModels/ShopModels";
 import { RankRole } from "../../database/Models/SecondsModels/RankRole";
 
 export default new client.command({

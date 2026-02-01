@@ -91,7 +91,7 @@ export default new client.command({
                 embeds: [
                     new EmbedBuilder()
                         .setTitle('Ролл!')
-                        .setDescription(`${targetUser}, вам предлагает ${interaction.user} сделать ролл, на сумму \`${sumRoll}\` монеток. \nПринимаете или отказываетесь от такого предложения?`)
+                        .setDescription(`${targetUser}, вам предлагает ${interaction.user} сделать ролл, на сумму \`${sumRoll}\` монеток.\nБудете роллить?>`)
                         .setColor('Random')
                         .setTimestamp()
                 ],
@@ -164,7 +164,7 @@ export default new client.command({
                                                 embeds: [
                                                     new EmbedBuilder()
                                                         .setTitle('Ролл закончен!')
-                                                        .setDescription(`${targetUser} и ${interaction.user} закончили ролл в ничью со значениями \`${rollSecond}\` и \`${rollFirst}\`.\nНикто не победил, сумма вычесляется у пользователей в размере \`${sumRoll}\` монеток.`)
+                                                        .setDescription(`${targetUser} и ${interaction.user} закончили ролл в ничью со значениями \`${rollSecond}\` и \`${rollFirst}\`.\nНикто не победил, сумма вычисляется у пользователей в размере \`${sumRoll}\` монеток.`)
                                                         .setColor(`#${colors.stable}`)
                                                         .setTimestamp()
                                                 ],
