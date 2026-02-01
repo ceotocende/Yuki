@@ -4,7 +4,7 @@ import { Canvas, createCanvas, loadImage } from "canvas";
 import path from "node:path";
 import { Users } from "../../database/Models/MainModels/UsersModels";
 import AddUserToDB from "../../database/Functions/AddUsersToDB";
-import formatTimeForProfile from "../../utils/formatTimeForProfile";
+import formatTimeForProfile from "../../functions/formatTimeForProfile";
 import { RateDB as RateDB } from "../../database/Models/MainModels/RateModel";
 import { RecordsDB } from "../../database/Models/MainModels/RecordsModel";
 import { channelsId } from "../../utils/config";

@@ -6,7 +6,7 @@ import { RecordsDB } from "../../database/Models/MainModels/RecordsModel";
 import AddUserToDB from "../../database/Functions/AddUsersToDB";
 import getMonth from "../../functions/getMonth";
 import { colors, embedErrFromInteractions } from "../../utils/config";
-import formatTimeForProfile from "../../utils/formatTimeForProfile";
+import formatTimeForProfile from "../../functions/formatTimeForProfile";
 
 export default new client.command({
     structure: new SlashCommandBuilder()

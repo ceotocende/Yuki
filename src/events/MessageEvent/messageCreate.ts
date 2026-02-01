@@ -4,7 +4,7 @@ import AddBalanceToDB from "../../database/Functions/AddBalanceToDB";
 import AddExpToDatabase from "../../database/Functions/AddExpToDatabase";
 import AddMessageToDB from "../../database/Functions/AddMessageToDB";
 import AddUserToDB from "../../database/Functions/AddUsersToDB";
-import getBoxGiftTimely from "../../utils/getBoxGiftTimely";
+import getBoxGiftTimely from "../../functions/getBoxGiftTimely";
 let messageCoutToGift = 0;
 
 client.on('messageCreate', async message => {

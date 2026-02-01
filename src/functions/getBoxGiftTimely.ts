@@ -1,5 +1,5 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, Channel, EmbedBuilder, TextChannel } from "discord.js";
-import { colors } from "./config";
+import { colors } from "../utils/config";
 import { Users } from "../database/Models/MainModels/UsersModels";
 import AddUserToDB from "../database/Functions/AddUsersToDB";
 
@@ -79,7 +79,7 @@ export default async function getBoxGiftTimely(channel: TextChannel) {
             embeds: [
                 new EmbedBuilder()
                     .setAuthor({ name: `Приз получен` })
-                    .setDescription(`Поздравляем победителя <@${userIdWin !== "0" ? userIdWin : 'никого'}>!`)
+                    .setDescription(`Поздравляем победителя <@${userIdWin !== "0" ? `${userIdWin}\nВы выйграли\`${sum}\` монеток` : 'никого'}>!`)
                     .setTimestamp()
                     .setColor(`#${colors.stable}`)
             ],

@@ -19,4 +19,5 @@ export const embedErrFromUserDb = new EmbedBuilder()
 export const channelsId = {
     guildId: "1397730981124767878",
     voiceLog: "1447690029362188560",
+    lvlUp: "1465786174051451174"
 }

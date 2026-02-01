@@ -1,12 +1,14 @@
 import { EmbedBuilder, Guild, TextChannel, User } from "discord.js";
 import { Users } from "../Models/MainModels/UsersModels";
+import { channelsId } from "../../utils/config";
+import { ChekRankRole } from "./ChekRankRole";
 
 
 function calculateRequiredExp(level: number): number {
     return 100 + 50 * level + 5 * Math.pow(level, 2);
 }
 
-export default async function CheckLvl(user: User, guild: Guild) {
+export default async function SendUpLvl(user: User, guild: Guild) {
     const userDb = await Users.findOne({ where: { user_id: user.id } });
 
     if (!userDb) return;
@@ -39,8 +41,9 @@ export default async function CheckLvl(user: User, guild: Guild) {
 
         if (!guild) return;
         else {
-            const channel = guild.channels.cache.get('1465786174051451174') as TextChannel;
-
+            const channel = guild.channels.cache.get(channelsId.lvlUp) as TextChannel;
+            const role = await ChekRankRole(user, guild);
+            console.log(role)
             if (!channel) return;
             else {
                 try {
@@ -49,7 +52,7 @@ export default async function CheckLvl(user: User, guild: Guild) {
                         embeds: [
                             new EmbedBuilder()
                                 .setTitle('Поздравляем!')
-                                .setDescription(`${user} повысил свой уровень до \`${userDb.lvl}\`\nНаграда за повышение уровня \`${oldExp}\` монеток.\nДо следующего уровня \`${userDb.need_exp}\``)
+                                .setDescription(`${user} повысил свой уровень до \`${userDb.lvl}\`\nНаграда за повышение уровня \`${oldExp}\` монеток${role !== null ? ` и новая роль ${role}!` : `.`}\nДо следующего уровня \`${userDb.need_exp}\` опыта.`)
                                 .setThumbnail(`${user.avatarURL() || guild.iconURL()}`)
                                 .setTimestamp()
                                 .setColor('Purple')

@@ -1,10 +1,11 @@
 import { SlashCommandBuilder } from "discord.js";
 import { client } from "../..";
 import { ShopDB } from "../../database/Models/MainModels/ShopModels";
+import { RankRole } from "../../database/Models/SecondsModels/RankRole";
 
 export default new client.command({
     structure: new SlashCommandBuilder()
-        .setName('добавить_изменить_роль_в_магазин')
+        .setName('добавить_изменить_роль_уровеней')
         .setDescription('команда админа НЕ ТРОГАТЬ')
         .addRoleOption(op => op
             .setName('роль')
@@ -12,8 +13,8 @@ export default new client.command({
             .setRequired(true)
         )
         .addNumberOption(op => op
-            .setName('цена')
-            .setDescription('Введите цену')
+            .setName('lvl')
+            .setDescription('Введите lvl')
             .setRequired(true)
         )
         .addBooleanOption(op => op
@@ -24,30 +25,32 @@ export default new client.command({
         .setDefaultMemberPermissions(8),
     run: async (client, interaction) => {
         const role = interaction.options.getRole('роль');
-        const cost = interaction.options.getNumber('цена');
+        const lvl = interaction.options.getNumber('lvl');
         const bool = interaction.options.getBoolean('bool');
 
-        if (!role || !cost) return interaction.reply({ content: 'произошла ошибка', ephemeral: true });
+        if (!role || !lvl) return interaction.reply({ content: 'произошла ошибка', ephemeral: true });
 
-        const itemsShop = await ShopDB.findOne({ where: { item_id: role.id } });
+        const roleDb = await RankRole.findOne({ where: { role_id: role.id } });
         if (bool === true) {
-            if (!itemsShop) {
-                const newItem = await ShopDB.create({ item_id: role.id, cost: cost, time: '0', timely: false });
+            if (!roleDb) {
+                const newItem = await RankRole.create({ role_id: role.id, lvl: lvl });
     
                 newItem.save();
     
                 interaction.reply({
-                    content: `Роль ${role}, добавленна стоимостью **${cost}**`
+                    content: `Роль ${role}, добавленна **${lvl}**`
                 })
             } else {
-                itemsShop.cost = cost;
+                roleDb.lvl = lvl;
     
                 interaction.reply({
-                    content: `Цена роли ${role}, изменна на **${cost}**`
+                    content: `Lvl роли ${role}, изменен на **${lvl}**`
                 })
+
+                roleDb.save()
             }
         } else {
-            const destroyItem = await ShopDB.destroy({ where: { item_id: role.id } });
+            const destroyItem = await RankRole.destroy({ where: { role_id: role.id } });
             interaction.reply({
                     content: `Удалена роль ${role}`
                 })

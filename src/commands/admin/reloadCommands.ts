@@ -3,7 +3,7 @@ import { client } from "../..";
 import { Command } from "../../types";
 import { readdirSync } from "fs";
 import { join, resolve } from "path";
-import { compileProject } from "../../utils/builder";
+import { compileProject } from "../../functions/builder";
 
 export default new client.command({
     structure: new SlashCommandBuilder()
