@@ -1,4 +1,4 @@
-import { EmbedBuilder, SlashCommandBuilder } from "discord.js";
+import { EmbedBuilder, SlashCommandBuilder, StringSelectMenuBuilder, StringSelectMenuComponent } from "discord.js";
 import { client } from "../..";
 import { Users } from "../../database/Models/MainModels/UsersModels";
 import { RateDB } from "../../database/Models/MainModels/RateModel";
@@ -14,7 +14,7 @@ export default new client.command({
         .setDescription('Отобразить свой профиль или участника')
         .addUserOption(op => op
             .setName('пользователь')
-            .setDescription('Выбрать пользователя (необезательно)')
+            .setDescription('Выбрать пользователя (не обязательно)')
         ),
     run: async (client, interaction) => {
         const targetUser = interaction.options.getUser('пользователь') || interaction.user;
@@ -35,6 +35,10 @@ export default new client.command({
                 ephemeral: true
             });
         } else {
+            // const selectMenuBuilder = new StringSelectMenuBuilder()
+            //     .setCustomId('aboutRole')
+            //     .set
+
             interaction.reply({
                 embeds: [
                     new EmbedBuilder()
@@ -63,7 +67,7 @@ export default new client.command({
                                 value: `\`${userRecordDb.count_symbol}\``
                             },
                             {
-                                name: `Использованых команд`,
+                                name: `Использованных команд`,
                                 value: `\`${userRecordDb.commands_count}\``
                             },
                             {

@@ -1,7 +1,7 @@
 import { EmbedBuilder, Guild, TextChannel, User } from "discord.js";
 import { Users } from "../Models/MainModels/UsersModels";
 import { channelsId } from "../../utils/config";
-import { ChekRankRole } from "./ChekRankRole";
+import { CheckRankRole } from "./CheckRankRole";
 
 
 function calculateRequiredExp(level: number): number {
@@ -42,7 +42,7 @@ export default async function SendUpLvl(user: User, guild: Guild) {
         if (!guild) return;
         else {
             const channel = guild.channels.cache.get(channelsId.lvlUp) as TextChannel;
-            const role = await ChekRankRole(user, guild);
+            const role = await CheckRankRole(user, guild);
             console.log(role)
             if (!channel) return;
             else {

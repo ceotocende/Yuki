@@ -4,7 +4,7 @@ import { RankRole } from "../Models/SecondsModels/RankRole";
 import { RankRoleUser } from "../Models/SecondsModels/RankRoleUser";
 import AddUserToDB from "./AddUsersToDB";
 
-export async function ChekRankRole(user: User, guild: Guild): Promise<Role | null> {
+export async function CheckRankRole(user: User, guild: Guild): Promise<Role | null> {
     try {
         // Получаем данные пользователя
         const userDb = await Users.findOne({ where: { user_id: user.id } });
@@ -86,7 +86,7 @@ export async function ChekRankRole(user: User, guild: Guild): Promise<Role | nul
         }
 
     } catch (error) {
-        console.error("Ошибка в функции ChekRankRole:", error);
+        console.error("Ошибка в функции CheckRankRole:", error);
         return null;
     }
 }

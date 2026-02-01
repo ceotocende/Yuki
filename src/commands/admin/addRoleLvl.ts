@@ -4,7 +4,7 @@ import { RankRole } from "../../database/Models/SecondsModels/RankRole";
 
 export default new client.command({
     structure: new SlashCommandBuilder()
-        .setName('добавить_изменить_роль_уровеней')
+        .setName('добавить_изменить_роль_уровней')
         .setDescription('команда админа НЕ ТРОГАТЬ')
         .addRoleOption(op => op
             .setName('роль')
@@ -37,7 +37,7 @@ export default new client.command({
                 newItem.save();
     
                 interaction.reply({
-                    content: `Роль ${role}, добавленна **${lvl}**`
+                    content: `Роль ${role}, добавлена **${lvl}**`
                 })
             } else {
                 roleDb.lvl = lvl;

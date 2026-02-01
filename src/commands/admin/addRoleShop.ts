@@ -37,13 +37,13 @@ export default new client.command({
                 newItem.save();
     
                 interaction.reply({
-                    content: `Роль ${role}, добавленна стоимостью **${cost}**`
+                    content: `Роль ${role}, добавлена стоимостью **${cost}**`
                 })
             } else {
                 itemsShop.cost = cost;
     
                 interaction.reply({
-                    content: `Цена роли ${role}, изменна на **${cost}**`
+                    content: `Цена роли ${role}, измена на **${cost}**`
                 })
             }
         } else {

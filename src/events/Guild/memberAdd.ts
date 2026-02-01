@@ -15,7 +15,7 @@ client.on('guildMemberAdd', async (member) => {
                 content: `${member.user} Добро пожаловать на сервер`,
                 embeds: [
                     new EmbedBuilder()
-                        .setAuthor({ name: 'RU ENDO', iconURL: `${member.user.avatarURL() || member.guild.iconURL()}` })
+                        .setAuthor({ name: 'LAGPOINT', iconURL: `${member.user.avatarURL() || member.guild.iconURL()}` })
                         .setThumbnail(`${member.guild.iconURL()}`)
                         .setDescription('Прошу, присаживайся, тебя ждали!')
                         .setColor("Purple")
