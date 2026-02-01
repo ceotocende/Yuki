@@ -24,15 +24,15 @@ client.on('messageCreate', async message => {
         messageCountToGift += 1;
     }
 
-    function scheduleRandomTask(task: () => void, maxMinutes: number = 30) {
-        const randomDelay = Math.floor(Math.random() * maxMinutes * 60 * 1000);
-        setTimeout(() => {
-            task();
-            scheduleRandomTask(task, maxMinutes);
-        }, randomDelay);
-    }
+    // function scheduleRandomTask(task: () => void, maxMinutes: number = 30) {
+    //     const randomDelay = Math.floor(Math.random() * maxMinutes * 60 * 1000);
+    //     setTimeout(() => {
+    //         task();
+    //         scheduleRandomTask(task, maxMinutes);
+    //     }, randomDelay);
+    // }
 
-    scheduleRandomTask(async () => {
-        await getBoxGiftTimely(channel);
-    }, 30);
+    // scheduleRandomTask(async () => {
+    //     await getBoxGiftTimely(channel);
+    // }, 30);
 })
