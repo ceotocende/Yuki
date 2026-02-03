@@ -51,7 +51,7 @@ export default async function getBoxGiftTimely(channel: TextChannel) {
         components: [row]
     })
     
-    const collector = message.createMessageComponentCollector({ time: 60000 });
+    const collector = message.createMessageComponentCollector({ time: 600000 });
     
     collector.on('collect', async subInteraction => {
         const { customId } = subInteraction;
