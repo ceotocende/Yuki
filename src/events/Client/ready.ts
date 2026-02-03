@@ -17,15 +17,25 @@ Client.once('clientReady', async (client) => {
     channelSendStart.send('Хозяин, я проснулась!');
     await TableSync(channelSendStart);
 
-    function scheduleRandomTask(task: () => void, maxMinutes: number = 60) {
-        const randomDelay = Math.floor(Math.random() * maxMinutes * 60 * 1000);
-        setTimeout(() => {
-            task();
-            scheduleRandomTask(task, maxMinutes);
-        }, randomDelay);
+    function scheduleRandomTask(task: () => void, minMinutes: number = 60, maxMinutes: number = 90): NodeJS.Timeout {
+    // Проверка валидности диапазона
+    if (minMinutes < 0 || maxMinutes < 0 || minMinutes > maxMinutes) {
+        throw new Error('Некорректный диапазон минут');
     }
+    
+    // Генерируем случайную задержку от minMinutes до maxMinutes
+    const randomDelay = Math.floor(
+        Math.random() * (maxMinutes - minMinutes) * 60 * 1000 + 
+        minMinutes * 60 * 1000
+    );
+        
+    return setTimeout(() => {
+        task();
+        scheduleRandomTask(task, minMinutes, maxMinutes);
+    }, randomDelay);
+}
 
-    scheduleRandomTask(async () => {
-        await getBoxGiftTimely(channelGeneral);
-    }, 30);
+    const timer = scheduleRandomTask(async () => {
+    await getBoxGiftTimely(channelGeneral);
+}, 60, 90);
 });
