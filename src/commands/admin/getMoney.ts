@@ -19,17 +19,17 @@ export default new client.command({
         )
         .setDefaultMemberPermissions(8),
     run: async (client, interaction) => {
-        const targerUser = interaction.options.getUser('user')!;
+        const targetUser = interaction.options.getUser('user')!;
         const targetNum = interaction.options.getNumber('num')!;
-        const userDb = await Users.findOne({ where: { user_id: targerUser.id } });
+        const userDb = await Users.findOne({ where: { user_id: targetUser.id } });
 
         if (!userDb) {
             interaction.reply('Произошла ошибка, пользователя нет в базе данных, но мы его добавим.\nИспользуйте эту команду еще раз.');
-            await AddUserToDB(targerUser);
+            await AddUserToDB(targetUser);
         } else {
             userDb.exp = Number(userDb.exp) + targetNum;
             userDb.save();
-            interaction.reply(`Пользователю ${targerUser} добавленно \`${targetNum}\` монеток.`);
+            interaction.reply(`Пользователю ${targetUser} добавлено \`${targetNum}\` монеток.`);
         }
     }
 });

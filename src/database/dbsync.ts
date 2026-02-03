@@ -6,6 +6,7 @@ import { ShopDB } from "./Models/MainModels/ShopModels";
 import { RateDB } from "./Models/MainModels/RateModel";
 import { UsersItems } from "./Models/SecondsModels/UsersItemsModel";
 import { TextChannel } from "discord.js";
+import { Marry } from "./Models/SecondsModels/Marry";
 
 export async function TableSync(channel: TextChannel) {
   try {
@@ -14,6 +15,7 @@ export async function TableSync(channel: TextChannel) {
     await ShopDB.sync();
     await RateDB.sync();
     await UsersItems.sync();
+    await Marry.sync();
     
     await sequelize.sync({ alter: true });
     console.log('Таблицы синхронизированы');
