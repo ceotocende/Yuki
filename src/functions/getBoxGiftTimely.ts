@@ -79,7 +79,7 @@ export default async function getBoxGiftTimely(channel: TextChannel) {
             embeds: [
                 new EmbedBuilder()
                     .setAuthor({ name: `Приз получен` })
-                    .setDescription(`<@${userIdWin !== "0" ? `Поздравляем победителя ${userIdWin} \nВы выиграли\`${sum}\` монеток` : 'Никто не получил приз...'}>!`)
+                    .setDescription(`${userIdWin !== "0" ? `Поздравляем победителя <@${userIdWin}> \nВы выиграли\`${sum}\` монеток` : 'Никто не получил приз...'}!`)
                     .setTimestamp()
                     .setColor(`#${colors.stable}`)
             ],
