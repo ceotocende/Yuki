@@ -187,7 +187,7 @@ export default new client.command({
                                         await memberRole.add(roleByeId);
                                     } catch (error) {
                                         console.error('Ошибка при добавлении роли:', error);
-                                        const channels = interaction.guild!.channels.cache.get(channelsId.voiceLog) as TextChannel;
+                                        const channels = interaction.guild!.channels.cache.get(channelsId.chatLog) as TextChannel;
                                         channels.send({
                                             embeds: [
                                                 new EmbedBuilder()

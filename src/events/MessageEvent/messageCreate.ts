@@ -23,16 +23,4 @@ client.on('messageCreate', async message => {
     } else if (message.channel.id === '1397730981871620298') {
         messageCountToGift += 1;
     }
-
-    // function scheduleRandomTask(task: () => void, maxMinutes: number = 30) {
-    //     const randomDelay = Math.floor(Math.random() * maxMinutes * 60 * 1000);
-    //     setTimeout(() => {
-    //         task();
-    //         scheduleRandomTask(task, maxMinutes);
-    //     }, randomDelay);
-    // }
-
-    // scheduleRandomTask(async () => {
-    //     await getBoxGiftTimely(channel);
-    // }, 30);
 })

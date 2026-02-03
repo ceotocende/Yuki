@@ -206,7 +206,7 @@ export default new client.command({
 
             } catch (error) {
                 console.error('Ошибка при создании изображения:', error);
-                const channels = interaction.guild!.channels.cache.get(channelsId.voiceLog) as TextChannel;
+                const channels = interaction.guild!.channels.cache.get(channelsId.chatLog) as TextChannel;
                 channels.send({
                     embeds: [
                         new EmbedBuilder()

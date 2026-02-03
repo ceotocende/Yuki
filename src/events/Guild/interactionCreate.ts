@@ -12,7 +12,7 @@ client.on('interactionCreate', async (interaction) => {
         const command = client.commands.get(interaction.commandName);
         const channel = interaction.guild;
         if (!channel) return;
-        const channelLog = channel.channels.cache.get(channelsId.voiceLog) as TextChannel;
+        const channelLog = channel.channels.cache.get(channelsId.chatLog) as TextChannel;
         
         if (!interaction.inGuild()) return;
 

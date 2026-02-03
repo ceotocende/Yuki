@@ -10,7 +10,7 @@ const map = new Map();
 
 
 client.on('voiceStateUpdate', async (oldState, newState) => {
-    const channelLog = newState.guild.channels.cache.get(channelsId.voiceLog) as TextChannel;
+    const channelLog = newState.guild.channels.cache.get(channelsId.chatLog) as TextChannel;
     try {
         if ((oldState.guild.id !== channelsId.guildId) || (newState.guild.id !== channelsId.guildId)) return;
         if (oldState.member?.user.bot) return;
