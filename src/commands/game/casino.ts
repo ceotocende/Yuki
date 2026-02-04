@@ -45,7 +45,7 @@ export default new client.command({
                 .setName('ставка')
                 .setDescription('Сумма ставки (виртуальные деньги)')
                 .setRequired(true)
-                .setMinValue(1000)
+                .setMinValue(100)
                 .setMaxValue(10000)
         ),
 

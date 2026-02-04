@@ -201,7 +201,7 @@ export default new client.command({
                         .setDescription('Таблица лидеров закрыта')
                         .setColor(`#${colors.stable}`)
                 ],
-                components: []
+                components: [  ]
             });
         });
     },

@@ -27,7 +27,7 @@ export default new client.command({
                 .setName('ставка')
                 .setDescription('Сумма ставки')
                 .setRequired(true)
-                .setMinValue(1000)
+                .setMinValue(100)
                 .setMaxValue(5000)),
     
     run: async (client, interaction) => {

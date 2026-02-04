@@ -91,7 +91,7 @@ export default new client.command({
                 embeds: [
                     new EmbedBuilder()
                         .setTitle('Ролл!')
-                        .setDescription(`${targetUser}, вам предлагает ${interaction.user} сделать ролл, на сумму \`${sumRoll}\` монеток.\nБудете роллить?>`)
+                        .setDescription(`${targetUser}, вам предлагает ${interaction.user} сделать ролл, на сумму \`${sumRoll}\` монеток.\nБудете роллить?`)
                         .setColor('Random')
                         .setTimestamp()
                 ],
