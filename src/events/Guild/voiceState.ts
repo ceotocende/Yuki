@@ -91,7 +91,7 @@ async function endUserSessionWithRewards(userId: string, user: User, currentTime
         if (sessionDuration > 0) {
             await AddVoiceToDB(user, sessionDuration);
             await AddExpToDatabase(user, Math.floor(sessionDuration / 20000));
-            await AddBalanceToDB(user, Math.floor(sessionDuration / 1000));
+            await AddBalanceToDB(user, Math.floor(sessionDuration / 20000));
         }
         
         return sessionDuration;
