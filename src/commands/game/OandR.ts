@@ -129,6 +129,7 @@ export default new client.command({
         let choiceMade = false;
         
         collector.on('collect', async (i) => {
+            if (interaction.user.id !== i.user.id) return;
             if (choiceMade) return;
             
             await i.deferUpdate();
