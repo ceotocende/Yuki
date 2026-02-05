@@ -13,8 +13,6 @@ const activeSessions = new Map<string, number>();
 // Функция для инициализации активных сессий при запуске бота
 export async function initializeVoiceSessions() {
     try {
-        // НЕ очищаем старые сессии при запуске! Теперь сохраняем накопленное время
-        
         // Получаем все голосовые каналы на всех серверах
         for (const guild of client.guilds.cache.values()) {
             for (const channel of guild.channels.cache.values()) {
@@ -60,8 +58,51 @@ export async function initializeVoiceSessions() {
     }
 }
 
-// Функция для завершения сессии пользователя
-async function endUserSession(userId: string, currentTime: number): Promise<number> {
+// Функция для завершения сессии пользователя с начислением
+async function endUserSessionWithRewards(userId: string, user: User, currentTime: number): Promise<number> {
+    try {
+        const sessionStartTime = activeSessions.get(userId);
+        activeSessions.delete(userId);
+        
+        // Получаем запись из базы данных
+        const sessionRecord = await VoiceSessionDB.findOne({
+            where: { user_id: userId }
+        });
+        
+        if (!sessionRecord || !sessionRecord.join_time) {
+            return 0; // Нет активной сессии
+        }
+        
+        // Вычисляем продолжительность текущей сессии
+        const sessionDuration = currentTime - sessionRecord.join_time;
+        
+        // Добавляем к накопленному времени
+        const newAccumulatedTime = sessionRecord.accumulated_time + sessionDuration;
+        
+        // Обновляем запись: сбрасываем join_time (пользователь вышел)
+        await sessionRecord.update({
+            join_time: null,
+            channel_id: null,
+            accumulated_time: newAccumulatedTime,
+            last_updated: currentTime
+        });
+        
+        // Начисляем награды только если есть реальная продолжительность сессии
+        if (sessionDuration > 0) {
+            await AddVoiceToDB(user, sessionDuration);
+            await AddExpToDatabase(user, Math.floor(sessionDuration / 20000));
+            await AddBalanceToDB(user, Math.floor(sessionDuration / 1000));
+        }
+        
+        return sessionDuration;
+    } catch (error) {
+        console.error('Ошибка при завершении сессии с наградами:', error);
+        return 0;
+    }
+}
+
+// Функция для завершения сессии пользователя БЕЗ начисления (для перезагрузки)
+async function endUserSessionWithoutRewards(userId: string, currentTime: number): Promise<number> {
     try {
         const sessionStartTime = activeSessions.get(userId);
         activeSessions.delete(userId);
@@ -91,7 +132,7 @@ async function endUserSession(userId: string, currentTime: number): Promise<numb
         
         return sessionDuration;
     } catch (error) {
-        console.error('Ошибка при завершении сессии:', error);
+        console.error('Ошибка при завершении сессии без наград:', error);
         return 0;
     }
 }
@@ -127,31 +168,8 @@ async function startUserSession(member: GuildMember, channelId: string, currentT
     }
 }
 
-// Функция для получения общего накопленного времени
-async function getTotalAccumulatedTime(userId: string): Promise<number> {
-    try {
-        const sessionRecord = await VoiceSessionDB.findOne({
-            where: { user_id: userId }
-        });
-        
-        if (!sessionRecord) return 0;
-        
-        // Если пользователь сейчас в голосовом канале, добавляем текущую сессию
-        if (sessionRecord.join_time) {
-            const currentTime = Date.now();
-            const currentSessionDuration = currentTime - sessionRecord.join_time;
-            return sessionRecord.accumulated_time + currentSessionDuration;
-        }
-        
-        return sessionRecord.accumulated_time;
-    } catch (error) {
-        console.error('Ошибка при получении накопленного времени:', error);
-        return 0;
-    }
-}
-
-// Функция для сохранения общего времени при перезагрузке бота
-async function saveAccumulatedTimeForAllUsers() {
+// Функция для сохранения времени при перезагрузке бота (без начисления наград)
+async function saveTimeOnRestart() {
     try {
         const currentTime = Date.now();
         const allSessions = await VoiceSessionDB.findAll();
@@ -168,49 +186,12 @@ async function saveAccumulatedTimeForAllUsers() {
                     channel_id: null,
                     last_updated: currentTime
                 });
-                
-                // Пытаемся найти пользователя в кэше Discord
-                try {
-                    // Ищем пользователя во всех гильдиях
-                    let discordUser: User | undefined;
-                    
-                    for (const guild of client.guilds.cache.values()) {
-                        const member = guild.members.cache.get(session.user_id);
-                        if (member) {
-                            discordUser = member.user;
-                            break;
-                        }
-                    }
-                    
-                    // Если пользователь найден в кэше
-                    if (discordUser) {
-                        await AddVoiceToDB(discordUser, sessionDuration);
-                        await AddExpToDatabase(discordUser, Math.floor(sessionDuration / 10000));
-                        await AddBalanceToDB(discordUser, Math.floor(sessionDuration / 1000));
-                    } else {
-                        // Если пользователь не найден в кэше, пробуем фетчить из API
-                        try {
-                            discordUser = await client.users.fetch(session.user_id);
-                            if (discordUser) {
-                                await AddVoiceToDB(discordUser, sessionDuration);
-                                await AddExpToDatabase(discordUser, Math.floor(sessionDuration / 10000));
-                                await AddBalanceToDB(discordUser, Math.floor(sessionDuration / 1000));
-                            } else {
-                                console.warn(`Не удалось найти пользователя ${session.user_id} для сохранения времени`);
-                            }
-                        } catch (fetchError) {
-                            console.warn(`Не удалось загрузить пользователя ${session.user_id}:`, fetchError);
-                        }
-                    }
-                } catch (userError) {
-                    console.error(`Ошибка при обработке пользователя ${session.user_id}:`, userError);
-                }
             }
         }
         
-        console.log(`Сохранено накопленное время для ${allSessions.length} пользователей`);
+        console.log(`Сохранено время для ${allSessions.length} пользователей при перезагрузке`);
     } catch (error) {
-        console.error('Ошибка при сохранении накопленного времени:', error);
+        console.error('Ошибка при сохранении времени при перезагрузке:', error);
     }
 }
 
@@ -251,12 +232,8 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
 
         // Переход между каналами
         if (oldChannel && newChannel && oldChannel.id !== newChannel.id) {
-            const sessionDuration = await endUserSession(memberId, currentTime);
-            
-            if (sessionDuration > 0 && oldState.member?.user) {
-                await AddVoiceToDB(oldState.member.user, sessionDuration);
-                await AddExpToDatabase(oldState.member.user, Math.floor(sessionDuration / 10000));
-                await AddBalanceToDB(oldState.member.user, Math.floor(sessionDuration / 1000));
+            if (oldState.member?.user) {
+                await endUserSessionWithRewards(memberId, oldState.member.user, currentTime);
             }
             
             await startUserSession(newState.member!, newChannel.id, currentTime);
@@ -277,12 +254,8 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
 
         // Выход из канала
         if (oldChannel && !newChannel) {
-            const sessionDuration = await endUserSession(memberId, currentTime);
-            
-            if (sessionDuration > 0 && oldState.member?.user) {
-                await AddVoiceToDB(oldState.member.user, sessionDuration);
-                await AddExpToDatabase(oldState.member.user, Math.floor(sessionDuration / 10000));
-                await AddBalanceToDB(oldState.member.user, Math.floor(sessionDuration / 1000));
+            if (oldState.member?.user) {
+                await endUserSessionWithRewards(memberId, oldState.member.user, currentTime);
             }
 
             channelLog.send({
@@ -315,8 +288,8 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
 client.on('ready', async () => {
     console.log(`Бот ${client.user?.tag} запущен!`);
     
-    // Сохраняем накопленное время для всех пользователей (на случай перезагрузки)
-    await saveAccumulatedTimeForAllUsers();
+    // Сохраняем накопленное время для всех пользователей при перезагрузке (БЕЗ начисления наград)
+    await saveTimeOnRestart();
     
     // Инициализируем голосовые сессии
     await initializeVoiceSessions();
