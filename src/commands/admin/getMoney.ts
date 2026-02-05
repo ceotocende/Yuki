@@ -27,7 +27,7 @@ export default new client.command({
             interaction.reply('Произошла ошибка, пользователя нет в базе данных, но мы его добавим.\nИспользуйте эту команду еще раз.');
             await AddUserToDB(targetUser);
         } else {
-            userDb.exp = Number(userDb.exp) + targetNum;
+            userDb.balance = Number(userDb.balance) + targetNum;
             userDb.save();
             interaction.reply(`Пользователю ${targetUser} добавлено \`${targetNum}\` монеток.`);
         }
