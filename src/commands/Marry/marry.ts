@@ -11,7 +11,8 @@ export default new client.command({
         .addUserOption(op => op
             .setName('user')
             .setDescription('Выберите свою вторую половинку')
-            .setRequired(true)),
+            .setRequired(true))
+        .setDMPermission(false),
     async run(client, interaction) {
         const userTarget = interaction.options.getUser('user');
         await interaction.deferReply();

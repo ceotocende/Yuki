@@ -19,7 +19,8 @@ export default new client.command({
             .setRequired(true)
             .setMinValue(1)
             .setMaxValue(200000)
-        ),
+        )
+        .setDMPermission(false),
     run: async (client, interaction) => {
         const targetUser = interaction.options.getUser('user')!;
         const sumRoll = interaction.options.getNumber('num')!;

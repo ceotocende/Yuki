@@ -4,8 +4,6 @@ import { RecordsDB } from "../../database/Models/MainModels/RecordsModel";
 import { channelsId } from "../../utils/config";
 
 client.on('interactionCreate', async (interaction) => {
-    if (!interaction.inGuild()) return;
-
     if (interaction.isChatInputCommand()) {
         const userRecordsDb = await RecordsDB.findOne({ where: { user_id: interaction.user.id } });
 

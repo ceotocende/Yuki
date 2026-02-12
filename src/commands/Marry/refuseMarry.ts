@@ -5,7 +5,8 @@ import { Marry } from "../../database/Models/SecondsModels/Marry";
 export default new client.command({
     structure: new SlashCommandBuilder()
         .setName('развестись')
-        .setDescription('Развестись со своей тварью.'),
+        .setDescription('Развестись со своей тварью.')
+        .setDMPermission(false),
     async run(client, interaction) {
         const refuseMarryFirst = await Marry.findOne({ where: { user_id_first: interaction.user.id } });
         const refuseMarrySecond = await Marry.findOne({ where: { user_id_second: interaction.user.id } });

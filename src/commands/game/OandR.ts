@@ -28,8 +28,8 @@ export default new client.command({
                 .setDescription('Сумма ставки')
                 .setRequired(true)
                 .setMinValue(100)
-                .setMaxValue(5000)),
-    
+                .setMaxValue(5000))
+        .setDMPermission(false),
     run: async (client, interaction) => {
         // Проверка кулдауна
         const userId = interaction.user.id;

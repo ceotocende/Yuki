@@ -5,7 +5,8 @@ import { colors } from "../../utils/config";
 export default new client.command({
     structure: new SlashCommandBuilder()
         .setName('помощь')
-        .setDescription('Получить помощь по командам бота'),
+        .setDescription('Получить помощь по командам бота')
+        .setDMPermission(false),
     run: async (client, interaction) => {
         interaction.reply({
             embeds: [

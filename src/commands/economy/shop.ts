@@ -30,7 +30,8 @@ export default new client.command({
         .addUserOption(op => op
             .setName('user')
             .setDescription('Или купить другому пользователю роль (необязательно)')
-        ),
+        )
+        .setDMPermission(false),
     run: async (client, interaction) => {
         const shop = await ShopDB.findAll({
             attributes: [

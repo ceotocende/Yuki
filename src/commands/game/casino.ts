@@ -47,8 +47,8 @@ export default new client.command({
                 .setRequired(true)
                 .setMinValue(100)
                 .setMaxValue(10000)
-        ),
-
+        )
+        .setDMPermission(false),
     run: async (client, interaction) => {
         
         // Проверка кулдауна

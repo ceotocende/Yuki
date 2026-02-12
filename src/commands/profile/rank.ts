@@ -27,7 +27,8 @@ export default new client.command({
         .addUserOption(op => op
             .setName('юзер')
             .setDescription('Выбрать пользователя')
-        ),
+        )
+        .setDMPermission(false),
     run: async (client, interaction) => {
         await interaction.deferReply();
         // 1. Получаем пользователя

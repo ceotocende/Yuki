@@ -15,7 +15,8 @@ export default new client.command({
         .addUserOption(op => op
             .setName('пользователь')
             .setDescription('Выбрать пользователя (не обязательно)')
-        ),
+        )
+        .setDMPermission(false),
     run: async (client, interaction) => {
         const targetUser = interaction.options.getUser('пользователь') || interaction.user;
         const guildMemberJoin = interaction.guild?.members.cache.get(targetUser.id)!.joinedAt;

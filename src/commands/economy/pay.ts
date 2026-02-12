@@ -18,7 +18,8 @@ export default new client.command({
             .setRequired(true)
             .setMinValue(100)
             .setMaxValue(200000)
-        ),
+        )
+        .setDMPermission(false),
     run: async (client, interaction) => {
         const userTarget = interaction.options.getUser('user')!;
         const sumPay = interaction.options.getNumber('num')!;

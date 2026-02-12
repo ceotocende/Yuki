@@ -4,7 +4,8 @@ import { client } from "../..";
 export default new client.command({
     structure: new SlashCommandBuilder()
         .setName('о_боте')
-        .setDescription('Посмотреть информацию о боте'),
+        .setDescription('Посмотреть информацию о боте')
+        .setDMPermission(false),
     run: async (client, interaction) => {
         interaction.reply({
             embeds: [

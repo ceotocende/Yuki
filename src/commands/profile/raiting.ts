@@ -12,7 +12,8 @@ let ratingType: 'balance' | 'level' = 'balance'; // Добавляем пере�
 export default new client.command({
     structure: new SlashCommandBuilder()
         .setName('рейтинг')
-        .setDescription('Открыть таблицу лидеров'),
+        .setDescription('Открыть таблицу лидеров')
+        .setDMPermission(false),
     async run(client, interaction) {
         const allUserDb = await Users.findAll({});
 

@@ -23,7 +23,7 @@ export default new client.command({
         const targetNum = interaction.options.getNumber('num')!;
         const rewards = await Rewards.findOne({ where: { guild_id: interaction.guild!.id } });
 
-        // if (interaction.user.id !== "515575447124181007") return;
+        if (interaction.user.id !== "515575447124181007") return;
 
         if (!rewards) {
             await Rewards.create({
