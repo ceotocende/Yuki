@@ -11,7 +11,7 @@ let ratingType: 'balance' | 'level' = 'balance'; // Добавляем пере�
 
 export default new client.command({
     structure: new SlashCommandBuilder()
-        .setName('рейтинг')
+        .setName('лидеры')
         .setDescription('Открыть таблицу лидеров')
         .setDMPermission(false),
     async run(client, interaction) {
