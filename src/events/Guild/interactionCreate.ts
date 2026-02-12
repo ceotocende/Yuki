@@ -4,6 +4,7 @@ import { RecordsDB } from "../../database/Models/MainModels/RecordsModel";
 import { channelsId } from "../../utils/config";
 
 client.on('interactionCreate', async (interaction) => {
+    if (!interaction.inGuild() && interaction.isCommand()) return;
 
     if (interaction.isChatInputCommand()) {
         const userRecordsDb = await RecordsDB.findOne({ where: { user_id: interaction.user.id } });
@@ -13,6 +14,7 @@ client.on('interactionCreate', async (interaction) => {
         if (!channel) return;
         const channelLog = channel.channels.cache.get(channelsId.chatLog) as TextChannel;
         
+        if (!interaction.inGuild()) return;
 
         if (!command) return;
 
