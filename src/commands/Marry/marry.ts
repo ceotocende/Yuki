@@ -63,7 +63,7 @@ export default new client.command({
             const row = new ActionRowBuilder<ButtonBuilder>().addComponents(buttonAccept, buttonRefuse)
 
             const marryEmbed = new EmbedBuilder()
-                .setAuthor({ name: `Свадьба!`, iconURL: `https://media.discordapp.net/attachments/1190500593626779678/1190526201018732645/icons8--96.png?ex=65a21eed&is=658fa9ed&hm=b6b120023c0cc75e4ee98db1b06a20b735218c4e624febe41368ffa601870195&=&format=webp&quality=lossless` })
+                .setAuthor({ name: `Свадьба!` })
                 .setDescription(`${userTarget} вам сделали предложение руки и сердца от ${interaction.user}`)
                 .setColor('White')
                 .setImage('https://media1.tenor.com/m/4fgTN93I2CMAAAAC/marry-me.gif')
@@ -98,7 +98,7 @@ export default new client.command({
                             content: '',
                             embeds: [
                                 new EmbedBuilder()
-                                    .setAuthor({ name: `Поздравляем!`, iconURL: `https://media.discordapp.net/attachments/1190500593626779678/1190526201018732645/icons8--96.png?ex=65a21eed&is=658fa9ed&hm=b6b120023c0cc75e4ee98db1b06a20b735218c4e624febe41368ffa601870195&=&format=webp&quality=lossless` })
+                                    .setAuthor({ name: `Поздравляем!` })
                                     .setDescription(`${interaction.user} поженился(ась) с ${userTarget}\nСовет вам да любовь.`)
                                     .setColor(`#${colors.stable}`)
                                     .setTimestamp()
