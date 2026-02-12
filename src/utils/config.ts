@@ -21,7 +21,9 @@ export const channelsId = {
     chatLog: "1447690029362188560",
     lvlUp: "1465786174051451174",
     generalChat: "1397730981871620298",
-    basketChannel: "1405366275751805110"
+    basketChannel: "1405366275751805110",
+    valentineAdm: "1471597422512701531",
+    valentineChannel: "1471598351689453578"
 }
 
 export const workName = [

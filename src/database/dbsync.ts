@@ -10,6 +10,7 @@ import { Marry } from "./Models/SecondsModels/Marry";
 import { Rewards } from "./Models/MainModels/Rewards";
 import { VoiceSessionDB } from "./Models/SecondsModels/VoiceSession";
 import { NotificationRewards } from "./Models/SecondsModels/NotificationRewards";
+import { Valentine } from "./Models/SecondsModels/Valentine";
 
 export async function TableSync(channel: TextChannel) {
   try {
@@ -22,6 +23,7 @@ export async function TableSync(channel: TextChannel) {
     await Rewards.sync();
     await VoiceSessionDB.sync()
     await NotificationRewards.sync();
+    await Valentine.sync();
     
     await sequelize.sync({ alter: true });
     console.log('Таблицы синхронизированы');
