@@ -27,9 +27,8 @@ export default new client.command({
             ephemeral: true,
             content: `Ваша валентинка отправлена на рассмотрение. Откройте личные сообщения, чтобы я могла уведомить вас о рассмотрении валентинки.`
         })
-        const guild = await client.guilds.cache.get('1397730981124767878');
 
-        const channelValentineAdm = guild!.channels.cache.get(channelsId.valentineAdm) as TextChannel;
+        const channelValentineAdm = interaction.guild!.channels.cache.get(channelsId.valentineAdm) as TextChannel;
 
         const message = channelValentineAdm.send({
             embeds: [

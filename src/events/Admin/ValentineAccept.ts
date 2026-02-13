@@ -4,7 +4,7 @@ import { channelsId } from "../../utils/config";
 import { Valentine } from "../../database/Models/SecondsModels/Valentine";
 
 client.on('interactionCreate', async interaction => {
-    if (interaction.isButton()) {
+    if (interaction.isButton() && (interaction.channel!.id === '1471597422512701531')) {
         const splittedId = interaction.customId.split('-');
         const valentineDb = await Valentine.findOne({ where: { id: splittedId[1] } });
         const channelVal = interaction.guild?.channels.cache.get(channelsId.valentineChannel) as TextChannel;
