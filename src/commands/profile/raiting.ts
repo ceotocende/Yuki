@@ -190,12 +190,18 @@ export default new client.command({
         selectCollector.on('end', () => {
             // Убираем меню при завершении времени
             message.edit({
-                components: [rowButtons]
+                embeds: [
+                    new EmbedBuilder()
+                        .setTitle('Рейтинг')
+                        .setDescription('Таблица лидеров закрыта')
+                        .setColor(`#${colors.stable}`)
+                ],
+                components: [  ]
             });
         });
 
-        collector.on('end', () => {
-            message.edit({
+        collector.on('end', async () => {
+            await message.edit({
                 embeds: [
                     new EmbedBuilder()
                         .setTitle('Рейтинг')

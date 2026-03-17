@@ -32,7 +32,7 @@ client.on('interactionCreate', async interaction => {
                             user.send({
                                 embeds: [
                                     new EmbedBuilder()
-                                        .setTitle('Ваша валентинка одобрена')
+                                        .setTitle('Ваша анонимка одобрена')
                                         .setDescription(`Вы отправили ее для участника <@${valentineDb.user_id_second}>`)
                                         .setColor('Green')
                                         .setTimestamp()
@@ -44,7 +44,7 @@ client.on('interactionCreate', async interaction => {
                         content: `<@${valentineDb.user_id_second}>`,
                         embeds: [
                             new EmbedBuilder()
-                                .setTitle(`Валентинка`)
+                                .setTitle(`Анонимка`)
                                 .setDescription(`${valentineDb.description}`)
                                 .setTimestamp()
                                 .setColor('Red')
@@ -56,8 +56,8 @@ client.on('interactionCreate', async interaction => {
                         components: [],
                         embeds: [
                             new EmbedBuilder()
-                                .setTitle('Валентинка одобрена')
-                                .setDescription(`> Модератор ${interaction.user}\n> Валентинка: \n- Участнику <@${valentineDb.user_id_second}> \n- Контент: \`\`\`${valentineDb.description}\`\`\``)
+                                .setTitle('Анонимка одобрена')
+                                .setDescription(`> Модератор ${interaction.user}\n> Анонимка: \n- Участнику <@${valentineDb.user_id_second}> \n- Контент: \`\`\`${valentineDb.description}\`\`\``)
                                 .setTimestamp()
                                 .setColor('Green')
                         ]
@@ -69,7 +69,7 @@ client.on('interactionCreate', async interaction => {
                             user.send({
                                 embeds: [
                                     new EmbedBuilder()
-                                        .setTitle('Ваша валентинка отклонена')
+                                        .setTitle('Ваша анонимка отклонена')
                                         .setDescription(`Вы отправили ее для участника <@${valentineDb.user_id_second}>`)
                                         .setColor('Red')
                                         .setTimestamp()
@@ -81,8 +81,8 @@ client.on('interactionCreate', async interaction => {
                         components: [],
                         embeds: [
                             new EmbedBuilder()
-                                .setTitle('Валентинка отклонена')
-                                .setDescription(`> Модератор ${interaction.user}\n> Валентинка: \n- Участнику <@${valentineDb.user_id_second}> \n- Контент: \`\`\`${valentineDb.description}\`\`\``)
+                                .setTitle('Анонимка отклонена')
+                                .setDescription(`> Модератор ${interaction.user}\n> Анонимка: \n- Участнику <@${valentineDb.user_id_second}> \n- Контент: \`\`\`${valentineDb.description}\`\`\``)
                                 .setTimestamp()
                                 .setColor('DarkRed')
                         ]

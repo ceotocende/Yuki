@@ -23,7 +23,8 @@ export const channelsId = {
     generalChat: "1397730981871620298",
     basketChannel: "1405366275751805110",
     valentineAdm: "1471597422512701531",
-    valentineChannel: "1471598351689453578"
+    valentineChannel: "1471598351689453578",
+    SayHiChannel: "1397966165409661048"
 }
 
 export const workName = [

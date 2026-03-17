@@ -7,15 +7,15 @@ import { channelsId } from "../../utils/config";
 
 export default new client.command({
     structure: new SlashCommandBuilder()
-        .setName('валентинка')
-        .setDescription('Отправить валентинку пользователю')
+        .setName('анонимка')
+        .setDescription('Отправить анонимку пользователю')
         .addUserOption(op => op
             .setName('user')
             .setDescription('Выберите пользователя')
             .setRequired(true))
         .addStringOption(op => op
             .setName('text')
-            .setDescription('Выберите текст который вы хотите написать второй половинке')
+            .setDescription('Выберите текст который вы хотите написать')
             .setRequired(true)
             .setMaxLength(250)
             .setMinLength(10)),
@@ -25,7 +25,7 @@ export default new client.command({
 
         interaction.reply({
             ephemeral: true,
-            content: `Ваша валентинка отправлена на рассмотрение. Откройте личные сообщения, чтобы я могла уведомить вас о рассмотрении валентинки.`
+            content: `Ваша анонимка отправлена на рассмотрение. Откройте личные сообщения, чтобы я могла уведомить вас о рассмотрении анонимки.`
         })
 
         const channelValentineAdm = interaction.guild!.channels.cache.get(channelsId.valentineAdm) as TextChannel;

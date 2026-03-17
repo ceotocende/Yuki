@@ -11,61 +11,61 @@ import { Users } from "../../database/Models/MainModels/UsersModels";
 import { embedErrFromUserDb } from "../../utils/config";
 import AddUserToDB from "../../database/Functions/AddUsersToDB";
 
-// Символы для слотов
-const SLOT_SYMBOLS = ['🍒', '🍋', '🍊', '🍉', '🍇', '⭐', '7️⃣', '🔔'];
-const JACKPOT_SYMBOL = '💰';
+// Символы для слотов (только для визуала)
+const SLOT_SYMBOLS = ['🍒', '🍋', '🍊', '🍉', '🍇', '⭐', '7️⃣', '🔔', '💎', '🎰'];
 
-// Коэффициенты выигрыша
-const WIN_MULTIPLIERS = {
-    '💰': 20,  // Джекпот
-    '7️⃣': 10,
-    '⭐': 5,
-    '🔔': 3,
-    '🍒': 2,
-    '🍋': 2,
-    '🍊': 2,
-    '🍉': 1.5,
-    '🍇': 1.5
+// Настройки вероятностей и выплат
+const GAME_CONFIG = {
+    WIN_CHANCE: 0.20, // 20% шанс на выигрыш
+    MIN_BET: 100,
+    MAX_BET: 10000,
+    COOLDOWN_TIME: 30000, // 30 секунд кулдауна
+    REPLAY_TIME: 30000, // 30 секунд на повторную игру
+    
+    // Множители выигрыша (базовый множитель * ставка)
+    WIN_MULTIPLIERS: {
+        MIN: 1.2,  // Минимальный выигрыш (120% от ставки)
+        MAX: 5.0   // Максимальный выигрыш (500% от ставки)
+    },
+    
+    // Шанс на джекпот (0.5% от всех игр)
+    JACKPOT_CHANCE: 0.005,
+    JACKPOT_MULTIPLIER: 20 // Джекпот x20
 };
 
 // Система кулдаунов
 const cooldowns = new Map();
-const COOLDOWN_TIME = 60000; // 1 минута кулдауна
-
-// Хранение текущих игр для кнопок
-const activeGames = new Map();
 
 export default new client.command({
-    structure: 
-    new SlashCommandBuilder()
+    structure: new SlashCommandBuilder()
         .setName('слоты')
-        .setDescription('Игра в слот-машину')
-        .addIntegerOption(op =>
-            op
+        .setDescription('🎰 Сыграть в слот-машину')
+        .addIntegerOption(option =>
+            option
                 .setName('ставка')
-                .setDescription('Сумма ставки (виртуальные деньги)')
+                .setDescription('Сумма ставки')
                 .setRequired(true)
-                .setMinValue(100)
-                .setMaxValue(10000)
+                .setMinValue(GAME_CONFIG.MIN_BET)
+                .setMaxValue(GAME_CONFIG.MAX_BET)
         )
         .setDMPermission(false),
+    
     run: async (client, interaction) => {
-        
         // Проверка кулдауна
         const userId = interaction.user.id;
         const currentTime = Date.now();
         
         if (cooldowns.has(userId)) {
-            const expirationTime = cooldowns.get(userId) + COOLDOWN_TIME;
+            const expirationTime = cooldowns.get(userId) + GAME_CONFIG.COOLDOWN_TIME;
             
             if (currentTime < expirationTime) {
-                const timeLeft = (expirationTime - currentTime) / 1000;
+                const timeLeft = ((expirationTime - currentTime) / 1000).toFixed(1);
                 return interaction.reply({
                     embeds: [
                         new EmbedBuilder()
                             .setTitle('⏳ Кулдаун')
-                            .setDescription(`Подождите **${timeLeft.toFixed(1)}** секунд перед повторным использованием команды!`)
-                            .setColor('Yellow')
+                            .setDescription(`Подождите **${timeLeft}** секунд перед новой игрой!`)
+                            .setColor('Orange')
                     ],
                     ephemeral: true
                 });
@@ -77,425 +77,346 @@ export default new client.command({
         
         const betAmount = interaction.options.getInteger('ставка')!;
         
+        // Проверка баланса
         const userDb = await Users.findOne({ where: { user_id: interaction.user.id } });
         if (!userDb) {
-            interaction.reply({
+            await interaction.reply({
                 embeds: [embedErrFromUserDb],
                 ephemeral: true
             });
             return await AddUserToDB(interaction.user);
         }
         
-        const userBalance = userDb.balance;
-        if (userBalance < betAmount) {
+        if (userDb.balance < betAmount) {
             return interaction.reply({
                 embeds: [
                     new EmbedBuilder()
-                    .setTitle('Ошибка')
-                    .setDescription(`У вас недостаточно средств на балансе.\nНа данный момент у вас на балансе \`${userBalance}\``)
-                    .setColor('Red')
-                    .setTimestamp()
-                    .setThumbnail(interaction.user.avatarURL())
+                        .setTitle('❌ Недостаточно средств')
+                        .setDescription(`Ваш баланс: **${userDb.balance.toLocaleString('ru-RU')}** монет\nНеобходимо: **${betAmount.toLocaleString('ru-RU')}** монет`)
+                        .setColor('Red')
                 ],
                 ephemeral: true
             });
         }
         
-        // Отложим ответ, так как вычисления могут занять время
+        // Отложенный ответ для анимации
         await interaction.deferReply();
         
         // Запускаем игру
         await playSlots(interaction, userDb, betAmount);
+        
+        // Очищаем кулдаун через указанное время
+        setTimeout(() => {
+            cooldowns.delete(userId);
+        }, GAME_CONFIG.COOLDOWN_TIME);
     }
 });
 
-// Основная функция игры в слоты
-async function playSlots(interaction: any, userDb: any, betAmount: number, isReplay: boolean = false) {
-    if (!isReplay) {
-        // Анимация кручения барабанов
-        const loadingMessages = [
-            "🎰 Запускаем барабаны...",
-            "⚙️ Барабаны крутятся...",
-            "🌀 Определяем результат..."
-        ];
-        
-        // Показываем анимацию
-        const loadingEmbed = new EmbedBuilder()
-            .setTitle('🎰 Слот-Машина')
-            .setDescription(loadingMessages[0])
-            .setColor('Yellow')
-            .setFooter({ 
-                text: `Ставка: ${betAmount} монет`,
-                iconURL: interaction.user.displayAvatarURL() 
-            });
-        
-        await interaction.editReply({ 
-            embeds: [loadingEmbed] 
-        });
-        
-        // Анимация смены сообщений
-        for (let i = 1; i < loadingMessages.length; i++) {
-            await new Promise(resolve => setTimeout(resolve, 800));
-            loadingEmbed.setDescription(loadingMessages[i]);
-            await interaction.editReply({ 
-                embeds: [loadingEmbed] 
-            });
-        }
-        
-        // Задержка перед результатом
-        await new Promise(resolve => setTimeout(resolve, 1000));
-    } else {
-        // Для повторной игры показываем сообщение о начале
-        const replayEmbed = new EmbedBuilder()
-            .setTitle('🔄 Новая игра в слоты')
-            .setDescription(`Начинаем новую игру с той же ставкой...\n**Ставка:** ${betAmount} монет`)
-            .setColor('Blue')
-            .setFooter({ 
-                text: `Подготовка барабанов`,
-                iconURL: interaction.user.displayAvatarURL() 
-            });
-        
-        await interaction.editReply({ 
-            embeds: [replayEmbed] 
-        });
-        
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        
-        // Анимация кручения
-        const loadingMessages = ["🎰 Барабаны крутятся...", "🌀 Определяем результат..."];
-        const loadingEmbed = new EmbedBuilder()
-            .setTitle('🎰 Слот-Машина')
-            .setDescription(loadingMessages[0])
-            .setColor('Yellow');
-        
-        await interaction.editReply({ 
-            embeds: [loadingEmbed] 
-        });
-        
-        for (let i = 1; i < loadingMessages.length; i++) {
-            await new Promise(resolve => setTimeout(resolve, 800));
-            loadingEmbed.setDescription(loadingMessages[i]);
-            await interaction.editReply({ 
-                embeds: [loadingEmbed] 
-            });
-        }
-        
-        await new Promise(resolve => setTimeout(resolve, 1000));
-    }
+async function playSlots(interaction: any, userDb: any, betAmount: number) {
+    // Анимация кручения
+    await showSpinAnimation(interaction, betAmount);
     
-    // Генерация результатов слотов (3x3 сетка)
-    const slots = [];
-    for (let i = 0; i < 3; i++) {
-        const row = [];
-        for (let j = 0; j < 3; j++) {
-            // Небольшой шанс на джекпот-символ
-            const symbol = Math.random() < 0.02 ? JACKPOT_SYMBOL :
-                SLOT_SYMBOLS[Math.floor(Math.random() * SLOT_SYMBOLS.length)];
-            row.push(symbol);
-        }
-        slots.push(row);
-    }
-
-    // Проверка выигрышных комбинаций
-    const { winAmount, winLines } = calculateWin(slots, betAmount);
-    const hasWon = winAmount > 0;
+    // Определяем результат игры
+    const gameResult = determineGameResult(betAmount);
     
-    // Обновляем баланс пользователя
-    const newBalance = Number(userDb.balance) + (hasWon ? winAmount : -betAmount);
+    // Генерируем визуальное отображение слотов
+    const slots = generateSlotDisplay(gameResult.isWin, gameResult.isJackpot);
+    
+    // Обновляем баланс
+    const oldBalance = Number(userDb.balance);
+    const newBalance = gameResult.isWin 
+        ? oldBalance + gameResult.winAmount 
+        : oldBalance - betAmount;
+    
     await Users.update(
         { balance: newBalance },
         { where: { user_id: interaction.user.id } }
     );
+    
+    // Создаём embed с результатом
+    const embed = createResultEmbed(
+        interaction,
+        slots,
+        gameResult,
+        betAmount,
+        oldBalance,
+        newBalance
+    );
+    
+    // Создаём кнопку для повторной игры
+    const replayButton = createReplayButton(interaction.user.id, betAmount, newBalance >= betAmount);
+    
+    // Отправляем результат
+    await interaction.editReply({
+        embeds: [embed],
+        components: replayButton ? [replayButton] : []
+    });
+    
+    // Если есть кнопка, настраиваем обработчик
+    if (replayButton) {
+        setupReplayHandler(interaction, userDb, betAmount, newBalance);
+    }
+}
 
-    // Обновляем данные пользователя для следующей игры
-    userDb.balance = newBalance;
-
-    // Создание красивого embed
-    const embed = new EmbedBuilder()
-        .setTitle('🎰 Слот-Машина 🎰')
-        .setColor(hasWon ? 0x00FF00 : 0xFF0000)
-        .setDescription(`**Ставка:** ${betAmount.toLocaleString('ru-RU')} монет`)
-        .addFields(
-            {
-                name: 'Результат',
-                value: formatSlots(slots, winLines)
-            }
-        )
-        .setFooter({
-            text: `Баланс: ${newBalance.toLocaleString('ru-RU')} монет`,
-            iconURL: interaction.user.displayAvatarURL()
-        })
-        .setTimestamp();
-
-    // Добавляем информацию о выигрыше
-    if (hasWon) {
-        let winDescription = `Вы выиграли **${winAmount.toLocaleString('ru-RU')}** монет!`;
-        
-        // Показываем какие линии выиграли
-        if (winLines.length > 0) {
-            winDescription += `\n\n**Выигрышные линии:**`;
-            winLines.forEach(line => {
-                winDescription += `\n${line.lineType} линия (x${line.multiplier})`;
+async function showSpinAnimation(interaction: any, betAmount: number) {
+    const messages = [
+        "🎰 Запускаем барабаны...",
+        "⚙️ Барабаны крутятся...",
+        "✨ Комбинации собираются...",
+        "🎯 Определяем результат..."
+    ];
+    
+    for (const message of messages) {
+        const embed = new EmbedBuilder()
+            .setTitle('🎰 Слот-Машина')
+            .setDescription(message)
+            .setColor('Yellow')
+            .setFooter({ 
+                text: `Ставка: ${betAmount.toLocaleString('ru-RU')} монет`,
+                iconURL: interaction.user.displayAvatarURL() 
             });
+        
+        await interaction.editReply({ embeds: [embed] });
+        await new Promise(resolve => setTimeout(resolve, 600));
+    }
+}
+
+function determineGameResult(betAmount: number) {
+    // Проверяем джекпот
+    const isJackpot = Math.random() < GAME_CONFIG.JACKPOT_CHANCE;
+    
+    if (isJackpot) {
+        const winAmount = Math.floor(betAmount * GAME_CONFIG.JACKPOT_MULTIPLIER);
+        return {
+            isWin: true,
+            isJackpot: true,
+            winAmount,
+            multiplier: GAME_CONFIG.JACKPOT_MULTIPLIER
+        };
+    }
+    
+    // Проверяем обычный выигрыш (20% шанс)
+    const isWin = Math.random() < GAME_CONFIG.WIN_CHANCE;
+    
+    if (isWin) {
+        // Генерируем случайный множитель от MIN до MAX
+        const multiplier = GAME_CONFIG.WIN_MULTIPLIERS.MIN + 
+            Math.random() * (GAME_CONFIG.WIN_MULTIPLIERS.MAX - GAME_CONFIG.WIN_MULTIPLIERS.MIN);
+        
+        // Округляем до 2 знаков после запятой
+        const roundedMultiplier = Math.round(multiplier * 100) / 100;
+        const winAmount = Math.floor(betAmount * roundedMultiplier);
+        
+        return {
+            isWin: true,
+            isJackpot: false,
+            winAmount,
+            multiplier: roundedMultiplier
+        };
+    }
+    
+    // Проигрыш
+    return {
+        isWin: false,
+        isJackpot: false,
+        winAmount: 0,
+        multiplier: 0
+    };
+}
+
+function generateSlotDisplay(isWin: boolean, isJackpot: boolean): string[][] {
+    const slots: string[][] = [[], [], []];
+    
+    if (isJackpot) {
+        // Для джекпота показываем все 💰
+        for (let i = 0; i < 3; i++) {
+            for (let j = 0; j < 3; j++) {
+                slots[i][j] = '💰';
+            }
+        }
+    } else if (isWin) {
+        // Для выигрыша создаём видимость одной выигрышной линии
+        const winLineType = Math.floor(Math.random() * 3); // 0-горизонт, 1-вертик, 2-диагональ
+        const winSymbol = SLOT_SYMBOLS[Math.floor(Math.random() * SLOT_SYMBOLS.length)];
+        
+        // Заполняем случайными символами
+        for (let i = 0; i < 3; i++) {
+            for (let j = 0; j < 3; j++) {
+                slots[i][j] = SLOT_SYMBOLS[Math.floor(Math.random() * SLOT_SYMBOLS.length)];
+            }
         }
         
-        embed.addFields({
-            name: '🎉 Поздравляем! 🎉',
-            value: winDescription,
-            inline: false
-        });
-        
-        // Специальное сообщение для джекпота
-        if (winLines.some(line => line.multiplier === WIN_MULTIPLIERS[JACKPOT_SYMBOL])) {
-            embed.addFields({
-                name: '🏆 ДЖЕКПОТ! 🏆',
-                value: 'Вы сорвали джекпот! 🎉',
-                inline: false
-            });
-            embed.setColor(0xFFD700); // Золотой цвет для джекпота
+        // Создаём выигрышную линию
+        if (winLineType === 0) { // Горизонтальная
+            const row = Math.floor(Math.random() * 3);
+            for (let j = 0; j < 3; j++) {
+                slots[row][j] = winSymbol;
+            }
+        } else if (winLineType === 1) { // Вертикальная
+            const col = Math.floor(Math.random() * 3);
+            for (let i = 0; i < 3; i++) {
+                slots[i][col] = winSymbol;
+            }
+        } else { // Диагональ
+            if (Math.random() < 0.5) {
+                // Главная диагональ
+                for (let i = 0; i < 3; i++) {
+                    slots[i][i] = winSymbol;
+                }
+            } else {
+                // Побочная диагональ
+                for (let i = 0; i < 3; i++) {
+                    slots[i][2 - i] = winSymbol;
+                }
+            }
         }
     } else {
+        // Для проигрыша - все символы разные
+        for (let i = 0; i < 3; i++) {
+            for (let j = 0; j < 3; j++) {
+                // Гарантируем, что в каждой линии символы разные
+                let symbol;
+                do {
+                    symbol = SLOT_SYMBOLS[Math.floor(Math.random() * SLOT_SYMBOLS.length)];
+                } while (
+                    (j > 0 && symbol === slots[i][j-1]) || // Проверка по горизонтали
+                    (i > 0 && symbol === slots[i-1][j])    // Проверка по вертикали
+                );
+                slots[i][j] = symbol;
+            }
+        }
+    }
+    
+    return slots;
+}
+
+function createResultEmbed(
+    interaction: any,
+    slots: string[][],
+    gameResult: any,
+    betAmount: number,
+    oldBalance: number,
+    newBalance: number
+): EmbedBuilder {
+    // Форматируем слоты для отображения
+    const slotsDisplay = slots.map(row => 
+        row.map(symbol => symbol).join(' | ')
+    ).join('\n─────────────\n');
+    
+    // Определяем цвет и заголовок
+    let color: number;
+    let title = '🎰 Слот-Машина';
+    let resultText = '';
+    
+    if (gameResult.isJackpot) {
+        color = 0xFFD700; // Золотой
+        title = '🏆 ДЖЕКПОТ! 🏆';
+        resultText = `🎉 **ДЖЕКПОТ x${gameResult.multifier}!**\nВы выиграли **${gameResult.winAmount.toLocaleString('ru-RU')}** монет!`;
+    } else if (gameResult.isWin) {
+        color = 0x00FF00; // Зелёный
+        resultText = `✅ **Выигрыш x${gameResult.multiplier}!**\nВы получили **${gameResult.winAmount.toLocaleString('ru-RU')}** монет!`;
+    } else {
+        color = 0xFF0000; // Красный
+        resultText = `❌ **Проигрыш**\nВы потеряли **${betAmount.toLocaleString('ru-RU')}** монет.`;
+    }
+    
+    const embed = new EmbedBuilder()
+        .setTitle(title)
+        .setColor(color)
+        .setDescription(`\`\`\`\n${slotsDisplay}\n\`\`\``)
+        .addFields(
+            {
+                name: '📊 Ставка',
+                value: `\`${betAmount.toLocaleString('ru-RU')}\` монет`,
+                inline: true
+            },
+            {
+                name: gameResult.isWin ? '🎁 Выигрыш' : '💸 Потеря',
+                value: gameResult.isWin 
+                    ? `\`+${gameResult.winAmount.toLocaleString('ru-RU')}\` монет`
+                    : `\`-${betAmount.toLocaleString('ru-RU')}\` монет`,
+                inline: true
+            },
+            {
+                name: '💳 Баланс',
+                value: `\`${oldBalance.toLocaleString('ru-RU')}\` → \`${newBalance.toLocaleString('ru-RU')}\` монет`,
+                inline: false
+            }
+        )
+        .setFooter({ 
+            text: interaction.user.username,
+            iconURL: interaction.user.displayAvatarURL() 
+        })
+        .setTimestamp();
+    
+    // Добавляем описание результата
+    if (gameResult.isWin) {
         embed.addFields({
-            name: '😢 Повезет в следующий раз!',
-            value: `Вы проиграли **${betAmount.toLocaleString('ru-RU')}** монет.`,
+            name: '✨ Результат',
+            value: resultText,
             inline: false
         });
     }
+    
+    return embed;
+}
 
-    // Создаем кнопку для повторной игры
-    const replayRow = new ActionRowBuilder<ButtonBuilder>()
+function createReplayButton(userId: string, betAmount: number, enabled: boolean): ActionRowBuilder<ButtonBuilder> | null {
+    if (!enabled) return null;
+    
+    return new ActionRowBuilder<ButtonBuilder>()
         .addComponents(
             new ButtonBuilder()
-                .setCustomId(`slots_replay_${interaction.user.id}_${betAmount}`)
-                .setLabel('Играть той же ставкой')
+                .setCustomId(`replay_${userId}_${betAmount}`)
+                .setLabel('🎰 Играть ещё')
                 .setStyle(ButtonStyle.Success)
                 .setEmoji('🔄')
-                .setDisabled(newBalance < betAmount) // Отключаем кнопку если недостаточно средств
         );
+}
+
+function setupReplayHandler(interaction: any, userDb: any, betAmount: number, currentBalance: number) {
+    const filter = (i: any) => 
+        i.customId === `replay_${interaction.user.id}_${betAmount}` && 
+        i.user.id === interaction.user.id;
     
-    await interaction.editReply({ 
-        embeds: [embed], 
-        components: [replayRow] 
+    const collector = interaction.channel.createMessageComponentCollector({
+        filter,
+        time: GAME_CONFIG.REPLAY_TIME,
+        componentType: ComponentType.Button
     });
     
-    // Сохраняем данные игры для обработки кнопки
-    activeGames.set(`slots_replay_${interaction.user.id}_${betAmount}`, {
-        interaction,
-        userDb: { ...userDb, balance: newBalance },
-        betAmount
-    });
-    
-    // Обработка кнопки повторной игры
-    const replayFilter = (i: any) => i.user.id === interaction.user.id;
-    const replayCollector = interaction.channel.createMessageComponentCollector({
-        componentType: ComponentType.Button,
-        filter: replayFilter,
-        time: 30000 // 30 секунд
-    });
-    
-    replayCollector.on('collect', async (i: any) => {
+    collector.on('collect', async (i: any) => {
         await i.deferUpdate();
         
-        if (i.customId.startsWith('slots_replay_')) {
-            // Получаем данные игры
-            const gameData = activeGames.get(i.customId);
-            if (!gameData) {
-                replayCollector.stop();
-                return;
-            }
+        // Получаем актуальный баланс
+        const updatedUser = await Users.findOne({ where: { user_id: interaction.user.id } });
+        
+        if (!updatedUser || updatedUser.balance < betAmount) {
+            const errorEmbed = new EmbedBuilder()
+                .setTitle('❌ Недостаточно средств')
+                .setDescription(`Для повторной игры нужно **${betAmount.toLocaleString('ru-RU')}** монет`)
+                .setColor('Red');
             
-            // Проверяем баланс пользователя (актуальный)
-            const updatedUserDb = await Users.findOne({ where: { user_id: interaction.user.id } });
-            if (!updatedUserDb) {
-                replayCollector.stop();
-                return;
-            }
-            
-            const currentBalance = Number(updatedUserDb.balance);
-            
-            if (currentBalance < betAmount) {
-                const errorEmbed = new EmbedBuilder()
-                    .setTitle('❌ Недостаточно средств')
-                    .setDescription(`У вас недостаточно средств для ставки **${betAmount.toLocaleString('ru-RU')}** монет.\nТекущий баланс: **${currentBalance.toLocaleString('ru-RU')}** монет`)
-                    .setColor('Red')
-                    .setTimestamp();
-                
-                await interaction.editReply({ 
-                    embeds: [errorEmbed], 
-                    components: [] 
-                });
-                replayCollector.stop();
-                return;
-            }
-            
-            // Убираем кнопку
-            await interaction.editReply({ 
-                components: [] 
+            await interaction.editReply({
+                embeds: [errorEmbed],
+                components: []
             });
-            
-            // Устанавливаем кулдаун для повторной игры
-            cooldowns.set(interaction.user.id, Date.now());
-            
-            // Запускаем новую игру
-            await playSlots(interaction, updatedUserDb, betAmount, true);
+            return;
         }
         
-        replayCollector.stop();
+        // Убираем кнопку
+        await interaction.editReply({ components: [] });
+        
+        // Запускаем новую игру
+        await playSlots(interaction, updatedUser, betAmount);
+        collector.stop();
     });
     
-    replayCollector.on('end', async (collected: any, reason: any) => {
-        if (reason === 'time') {
-            // Убираем кнопку после истечения времени
-            const disabledRow = new ActionRowBuilder<ButtonBuilder>()
-                .addComponents(
-                    new ButtonBuilder()
-                        .setCustomId(`slots_replay_${interaction.user.id}_${betAmount}`)
-                        .setLabel('Время вышло')
-                        .setStyle(ButtonStyle.Secondary)
-                        .setEmoji('⏰')
-                        .setDisabled(true)
-                );
-            
-            try {
-                await interaction.editReply({ 
-                    components: [disabledRow] 
-                });
-            } catch (error) {
-                // Игнорируем ошибки редактирования сообщения
-            }
-            
-            // Удаляем игру из активных
-            activeGames.delete(`slots_replay_${interaction.user.id}_${betAmount}`);
+    collector.on('end', async () => {
+        try {
+            await interaction.editReply({ components: [] });
+        } catch (error) {
+            // Игнорируем ошибки
         }
     });
 }
-
-// Функция форматирования слотов в виде таблицы с подсветкой выигрышных линий
-function formatSlots(slots: string[][], winLines: any[]): string {
-    const lines = [];
-    
-    // Добавляем выигрышные линии в описании
-    for (let i = 0; i < 3; i++) {
-        const row = slots[i];
-        let rowString = '| ';
-        
-        for (let j = 0; j < 3; j++) {
-            // Проверяем, находится ли эта ячейка в выигрышной линии
-            const isWinningCell = winLines.some(line => {
-                if (line.lineType === 'Горизонтальная' && line.row === i) return true;
-                if (line.lineType === 'Вертикальная' && line.col === j) return true;
-                if (line.lineType === 'Диагональная') {
-                    if (line.diag === 'main' && i === j) return true;
-                    if (line.diag === 'anti' && i === 2 - j) return true;
-                }
-                return false;
-            });
-            
-            rowString += isWinningCell ? `**${row[j]}**` : row[j];
-            if (j < 2) rowString += ' | ';
-        }
-        
-        rowString += ' |';
-        lines.push(rowString);
-    }
-    
-    return lines.join('\n');
-}
-
-// Функция расчета выигрыша
-function calculateWin(slots: string[][], bet: number): { winAmount: number, winLines: any[] } {
-    let totalMultiplier = 0;
-    const winLines: any[] = [];
-
-    // Проверка горизонтальных линий
-    for (let i = 0; i < 3; i++) {
-        const row = slots[i];
-        if (row[0] === row[1] && row[1] === row[2]) {
-            const symbol = row[0];
-            const multiplier = WIN_MULTIPLIERS[symbol as keyof typeof WIN_MULTIPLIERS] || 0;
-            
-            if (multiplier > 0) {
-                totalMultiplier += multiplier;
-                winLines.push({
-                    lineType: 'Горизонтальная',
-                    row: i,
-                    multiplier: multiplier,
-                    symbol: symbol
-                });
-            }
-        }
-    }
-
-    // Проверка вертикальных линий
-    for (let j = 0; j < 3; j++) {
-        if (slots[0][j] === slots[1][j] && slots[1][j] === slots[2][j]) {
-            const symbol = slots[0][j];
-            const multiplier = WIN_MULTIPLIERS[symbol as keyof typeof WIN_MULTIPLIERS] || 0;
-            
-            if (multiplier > 0) {
-                totalMultiplier += multiplier;
-                winLines.push({
-                    lineType: 'Вертикальная',
-                    col: j,
-                    multiplier: multiplier,
-                    symbol: symbol
-                });
-            }
-        }
-    }
-
-    // Проверка главной диагонали
-    if (slots[0][0] === slots[1][1] && slots[1][1] === slots[2][2]) {
-        const symbol = slots[0][0];
-        const multiplier = WIN_MULTIPLIERS[symbol as keyof typeof WIN_MULTIPLIERS] || 0;
-        
-        if (multiplier > 0) {
-            totalMultiplier += multiplier;
-            winLines.push({
-                lineType: 'Диагональная',
-                diag: 'main',
-                multiplier: multiplier,
-                symbol: symbol
-            });
-        }
-    }
-
-    // Проверка побочной диагонали
-    if (slots[0][2] === slots[1][1] && slots[1][1] === slots[2][0]) {
-        const symbol = slots[0][2];
-        const multiplier = WIN_MULTIPLIERS[symbol as keyof typeof WIN_MULTIPLIERS] || 0;
-        
-        if (multiplier > 0) {
-            totalMultiplier += multiplier;
-            winLines.push({
-                lineType: 'Диагональная',
-                diag: 'anti',
-                multiplier: multiplier,
-                symbol: symbol
-            });
-        }
-    }
-
-    const winAmount = totalMultiplier > 0 ? Math.floor(bet * totalMultiplier) : 0;
-    
-    return { winAmount, winLines };
-}
-
-// Очистка старых кулдаунов и активных игр
-setInterval(() => {
-    const currentTime = Date.now();
-    
-    // Очистка кулдаунов
-    for (const [userId, timestamp] of cooldowns.entries()) {
-        if (currentTime > timestamp + COOLDOWN_TIME + 300000) {
-            cooldowns.delete(userId);
-        }
-    }
-    
-    // Очистка старых активных игр (старше 5 минут)
-    for (const [gameId, gameData] of activeGames.entries()) {
-        if (currentTime > gameData.timestamp + 300000) {
-            activeGames.delete(gameId);
-        }
-    }
-}, 300000);

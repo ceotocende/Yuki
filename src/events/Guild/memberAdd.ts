@@ -8,21 +8,30 @@ client.on('guildMemberAdd', async (member) => {
     else {
         await AddUserToDB(member.user);
         const channel = member.guild.channels.cache.get(channelsId.generalChat) as TextChannel;
+        const channelSayHi = member.guild.channels.cache.get(channelsId.SayHiChannel) as TextChannel;
+
+        const embed = new EmbedBuilder()
+            .setAuthor({ name: 'LAGPOINT', iconURL: `${member.user.avatarURL() || member.guild.iconURL()}` })
+            .setThumbnail(`${member.guild.iconURL()}`)
+            .setDescription('Прошу, присаживайся, тебя ждали!')
+            .setColor("Purple")
+            .setTimestamp();
 
         if (!channel) {
             return console.log('Ошибка приветствия пользователя');
-        } else { 
+        } else {
             channel.send({
                 content: `${member.user} Добро пожаловать на сервер`,
-                embeds: [
-                    new EmbedBuilder()
-                        .setAuthor({ name: 'LAGPOINT', iconURL: `${member.user.avatarURL() || member.guild.iconURL()}` })
-                        .setThumbnail(`${member.guild.iconURL()}`)
-                        .setDescription('Прошу, присаживайся, тебя ждали!')
-                        .setColor("Purple")
-                        .setTimestamp()
-                ]
-            })
+                embeds: [ embed ]
+            });
+        }
+
+        if (!channelSayHi) {
+            return console.log('Ошибка приветствия пользователя');
+        } else {
+            channelSayHi.send({
+                embeds: [ embed ]
+            });
         }
     }
 })
