@@ -18,7 +18,7 @@ const SLOT_SYMBOLS = ['🍒', '🍋', '🍊', '🍉', '🍇', '⭐', '7️⃣', 
 const GAME_CONFIG = {
     WIN_CHANCE: 0.20, // 20% шанс на выигрыш
     MIN_BET: 100,
-    MAX_BET: 10000,
+    MAX_BET: 100000,
     COOLDOWN_TIME: 30000, // 30 секунд кулдауна
     
     // Множители выигрыша
